@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+
 
 import numpy as np
 import cv2
@@ -28,6 +30,10 @@ def index(request):
 
 def upload_query(request):
 	page_template = 'retrieval/query.html'
+	model_path = 'saved_models/new-iam.t7'
+	kdtree_path = 'saved_models/mohanlal_kdtree.p'
+	page2word_path = 'saved_models/page_to_word.p'
+	
 	context = {}
 	chosen_id = request.session['chosen_id']
 	if request.method == 'POST':
@@ -36,8 +42,15 @@ def upload_query(request):
 			fobj = request.FILES['query']
 			jpeg_array = bytearray(fobj.read())
 			img = cv2.imdecode(np.asarray(jpeg_array), 1)
-			request.session['img_shape'] = img.shape
-			request.session['qbs'] = img.tolist()
+			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+			#query_image = np.asarray(query_image, dtype=np.uint8)
+			img_feat = feature(img, model_path)
+
+			kdtree = open(kdtree_path, 'rb')
+			page2word = open(page2word_path, 'rb')
+
+			results = query_word(img_feat, kdtree, page2word) 
+			request.session['results'] = results[0]
 			return redirect('results')
 	else:
 		form = UploadForm()
@@ -49,23 +62,18 @@ def upload_query(request):
 
 def results(request):
 	page_template = 'retrieval/results.html'
-	model_path = 'saved_models/new-iam.t7'
-	kdtree_path = 'saved_models/mohanlal_kdtree.p'
-	page2word_path = 'saved_models/page_to_word.p'
-	query_image = request.session['qbs']
-	img_shape = request.session['img_shape']
+	results = request.session['results']
 	collection_id = request.session['chosen_id']
+
 	context = {}
+	pages = []
+	for each in results:
+		pages.append(each.split('/')[0]+'.jpg')
+	print(pages)
+	paginator = Paginator(pages, 1)
 
-	img_feat = feature(np.array(query_image), model_path)
-	#API_URL = "http://localhost:5000/search"
-	#payload = {'image': query_image}
+	display_page = request.GET.get('page')
+	pages = paginator.get_page(display_page)
 
-	kdtree = open(kdtree_path, 'rb')
-	page2word = open(page2word_path, 'rb')
-
-	results = query_word(img_feat, kdtree, page2word) 
-
-	context['results'] = results[0]
-	print(results)
+	context['pages'] = pages
 	return render(request, page_template, context) 

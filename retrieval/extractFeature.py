@@ -51,7 +51,7 @@ def feature(image, model_path):
     ])
 
     ## Image preprocessing
-    image = rgb2gray(image)
+    #image = rgb2gray(image)
     image, roi = preprocess(image, fontsize, transform_test) 
         
     roi[:,0] = torch.arange(0,roi.size()[0])
