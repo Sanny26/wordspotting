@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 
 <form enctype="multipart/form-data" method="post">
     {% csrf_token %}
@@ -5,3 +8,5 @@
     <br>
     <input type="submit" value="Search for the query" />
 </form>
+
+{% endblock %}
