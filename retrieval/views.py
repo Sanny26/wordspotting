@@ -4,6 +4,9 @@ from django.core.paginator import Paginator
 
 import numpy as np
 import cv2
+import base64
+from io import StringIO
+from PIL import Image
 
 from .models import Collections
 from .forms import SelectForm, UploadForm
@@ -43,7 +46,6 @@ def upload_query(request):
 			jpeg_array = bytearray(fobj.read())
 			img = cv2.imdecode(np.asarray(jpeg_array), 1)
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-			#query_image = np.asarray(query_image, dtype=np.uint8)
 			img_feat = feature(img, model_path)
 
 			kdtree = open(kdtree_path, 'rb')
@@ -51,6 +53,12 @@ def upload_query(request):
 
 			results = query_word(img_feat, kdtree, page2word) 
 			request.session['results'] = results[0]
+
+			img = Image.fromarray(img)
+			buffer = StringIO()
+			img.save(buffer, "PNG")
+			img_str = base64.b64encode(buffer.getvalue())
+			request.session['img_str'] = img_str
 			return redirect('results')
 	else:
 		form = UploadForm()
@@ -64,6 +72,8 @@ def results(request):
 	page_template = 'retrieval/results.html'
 	results = request.session['results']
 	collection_id = request.session['chosen_id']
+	img_str = request.session['img_str']
+
 
 	context = {}
 	pages = []
@@ -76,4 +86,5 @@ def results(request):
 	pages = paginator.get_page(display_page)
 
 	context['pages'] = pages
+	context['img_str'] = img_str
 	return render(request, page_template, context) 
