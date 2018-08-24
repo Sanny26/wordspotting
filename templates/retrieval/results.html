@@ -3,7 +3,8 @@
 {% block content %}
 <h2>Search results</h2>
 <h3>Query image </h3>
-<img src="data:image/png;base64,{{ img_str }}">
+<img src="{{qimg}}" />
+
 <br>
 {% for each in pages %}
 <h3>{{each}}</h3>
