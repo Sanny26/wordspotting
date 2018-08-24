@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse, reverse
 from django.core.paginator import Paginator
-
+# from django.utils.httpwrappers import 
 
 import numpy as np
 import cv2
 import base64
-from io import StringIO
+from io import BytesIO, StringIO
 from PIL import Image
 
 from .models import Collections
@@ -54,11 +54,7 @@ def upload_query(request):
 			results = query_word(img_feat, kdtree, page2word) 
 			request.session['results'] = results[0]
 
-			img = Image.fromarray(img)
-			buffer = StringIO()
-			img.save(buffer, "PNG")
-			img_str = base64.b64encode(buffer.getvalue())
-			request.session['img_str'] = img_str
+			request.session['qimg'] = img.tolist()
 			return redirect('results')
 	else:
 		form = UploadForm()
@@ -68,23 +64,31 @@ def upload_query(request):
 	return render(request, page_template, context)
 
 
+def show_image(request):
+	qimg = np.array(request.session['qimg'])
+	
+	print(qimg.dtype, qimg.shape)
+	qimg = Image.fromarray(np.uint8(qimg))
+	response = HttpResponse(content_type="image/png")
+	qimg.save(response, "PNG")
+	return response
+
+
 def results(request):
 	page_template = 'retrieval/results.html'
 	results = request.session['results']
 	collection_id = request.session['chosen_id']
-	img_str = request.session['img_str']
-
 
 	context = {}
 	pages = []
 	for each in results:
 		pages.append(each.split('/')[0]+'.jpg')
-	print(pages)
 	paginator = Paginator(pages, 1)
 
 	display_page = request.GET.get('page')
 	pages = paginator.get_page(display_page)
 
 	context['pages'] = pages
-	context['img_str'] = img_str
+	context['qimg'] = reverse('show_image')
+
 	return render(request, page_template, context) 

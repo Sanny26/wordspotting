@@ -7,5 +7,6 @@ from . import views
 urlpatterns = [
 	path('', views.index, name='index'),
 	path('query', views.upload_query, name='upload_query'),
-	path('results', views.results, name='results')
+	path('results', views.results, name='results'),
+	path('show_image', views.show_image, name='show_image'),
 	]
