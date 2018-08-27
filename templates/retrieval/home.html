@@ -1,10 +1,33 @@
 {% extends "base.html" %}
 
+{% block css %}
+    {% include "retrieval/template_css.html" %}
+{% endblock %}
+
 {% block content %}
-<form action="/" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit" />
-</form>
+
+<section id="about">
+      <br><br>
+        <div class="container">
+                <div class="col-lg-12 text-center">
+                   <form action="/" method="post">
+                   	<div class="row control-group">
+                            <div class="form-group col-xs-12 label-form-group controls">
+					    		{% csrf_token %}
+                                {{form.as_p}}
+                            </div>
+                    </div>
+    				<input type="submit" value="Submit" />
+				</form>
+                </div>
+        </div>
+</section>
+
+
+
 
 {% endblock%}
+
+{% block scripts %}
+{% include "retrieval/template_scripts.html" %}
+{% endblock %}
