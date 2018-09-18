@@ -64,9 +64,8 @@ def upload_query(request):
 				positions.append(pos)
 
 			request.session['results'] = results[0]
-			request.session['pos'] = positions
-			#return redirect('results')
-			return redirect(reverse('view_results', args=[0]))
+			request.session['positions'] = positions
+			return redirect('results')
 	else:
 		form = UploadForm()
 
@@ -84,10 +83,15 @@ def show_image(request):
 
 
 def show_page(request):
-	qimg = np.array(request.session['nimg'])
-	qimg = Image.fromarray(np.uint8(qimg))
+	path = request.session['path']
+	pos = request.session['pos']
+	print('!!!!!!!!!!!!!!!!!!!!!11', path, pos)
+	nimg = cv2.imread(path)
+	y1, y2, x1, x2 = pos
+	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
+	nimg = Image.fromarray(nimg)
 	response = HttpResponse(content_type="image/png")
-	qimg.save(response, "PNG")
+	nimg.save(response, "PNG")
 	return response
 
 
@@ -96,28 +100,17 @@ def results(request):
 	
 	results = request.session['results']
 	collection_id = request.session['chosen_id']
-	pos = request.session['pos']
-
+	
 	context = {}
 	pages = []
-	page_ims = []
 	for each in results:
-		nimg_path = "media/cleaned/"+each.split('/')[0]+'.jpg'
-		nimg = cv2.imread(nimg_path)
-		y1, y2, x1, x2 = pos
-		print(each, pos)
-		nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
-		#cv2.imwrite('test.jpg', nimg)
-		#pages.append(each.split('/')[0]+'.jpg')
-		page_ims.append(nimg.tolist())
-		pages.append(each.split('/')[0]+'.jpg')
+		pages.append([each.split('/')[0]+'.jpg', each])
 	
-	paginator = Paginator(pages, 1)
+	paginator = Paginator(pages, 6)
 
 	display_page = request.GET.get('page')
 	pages = paginator.get_page(display_page)
 
-	#request.session['page_ims'] = pages_ims
 	context['pages'] = pages
 	context['qimg'] = reverse('show_image')
 	return render(request, page_template, context) 
@@ -129,21 +122,20 @@ def view_results(request, pid):
 	pid = int(pid)
 	results = request.session['results']
 	collection_id = request.session['chosen_id']
-	positions = request.session['pos']
+	positions = request.session['positions']
 
 	context = {}
 	path = results[pid]
 	pos = positions[pid]
 	nimg_path = "media/cleaned/"+path.split('/')[0]+'.jpg'
-	nimg = cv2.imread(nimg_path)
-	y1, y2, x1, x2 = pos
-	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
 	context['qimg'] = reverse('show_image')
-	request.session['nimg'] = nimg.tolist()
+	#request.session['nimg'] = nimg.tolist()
+	request.session['path'] = nimg_path
+	request.session['pos'] = pos
 	context['nimg'] = reverse('show_page')
 
 	context['pid'] = pid
-	if pid!=(len(pos)-1):
+	if pid!=(len(results)-1):
 		context['next_pid'] = pid+1
 	else:
 		context['next_pid'] = -1
