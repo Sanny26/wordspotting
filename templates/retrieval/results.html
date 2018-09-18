@@ -35,7 +35,8 @@
 
 					<h4>Search results</h4>
 					{% for each in pages %}
-					<img src="/media/cleaned/{{each}}" style="padding:1px;border:1px solid #021a40;"/>
+					<img src="{% url 'show_page' forloop.counter0 %}" style="padding:1px;border:1px solid #021a40;"/>
+					<!--img src="{{qimg}}" style="padding:1px;border:1px solid #021a40;"/-->
 					<p>{{each}}</p>
 					<br>
 					{% endfor %}
