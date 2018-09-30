@@ -65,12 +65,15 @@ def feature(image, model_path):
     with torch.no_grad():
         roi = Variable(roi)
         inputs = Variable(image)
+
+        begin = time.time()
         ## Loading model
         net = ResNetROI34(num_classes=8135)
-        print('==> Resuming from checkpoint..')
+        #print('==> Resuming from checkpoint..')
         checkpoint = torch.load(model_path, map_location='cpu')
         net.load_state_dict(checkpoint)
         net.eval()
+        print('Model Load time', time.time()-begin)
         outputs, outFeats = net(inputs, roi)
         featData = outFeats.cpu().data.numpy()
     print(begin-time.time())

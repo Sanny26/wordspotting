@@ -26,7 +26,7 @@
 					
 					<tr>{% for each in pages %}
 					{% if forloop.counter0 < 3 %}
-					<td><img src="media/small_set/{{each.1}}"></td>
+					<td><img src="{{each.1}}"></td>
 					{% endif %}
 					{% endfor %}</tr>
 					</table>
@@ -42,7 +42,7 @@
 					
 					<tr>{% for each in pages %}
 					{% if forloop.counter0 >= 3 %}
-					<td><img src="media/small_set/{{each.1}}"></td>
+					<td><img src="{{each.1}}"></td>
 					{% endif %}
 					{% endfor %}</tr>
 					</table>
