@@ -6,9 +6,12 @@ import cv2
 from PIL import Image
 import pickle
 import matplotlib.pyplot as plt
+import time
+import os
+from shutil import copyfile
 
 from .models import Collections
-from .forms import SelectForm, UploadForm
+from .forms import ImSearchForm, TxtSearchForm
 from .word_index import query_word
 from .extractFeature import feature
 
@@ -36,12 +39,17 @@ def upload_query(request):
 	kdtree_path = 'saved_models/mohanlal_kdtree.p'
 	page2word_path = 'saved_models/page_to_word.p'
 	wrd_pos_fpath = 'saved_models/positions.pkl'
+	demo_path = 'media/demo/imgs/'
 	
 	context = {}
 	chosen_id = request.session['chosen_id']
 	if request.method == 'POST':
-		form = UploadForm(request.POST, request.FILES)
-		if form.is_valid():
+		form1 = ImSearchForm(request.POST, request.FILES)
+		form2 = TxtSearchForm(request.POST)
+		if form1.is_valid():
+			name = form1.cleaned_data['name']
+			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
+			begin = time.time()
 			fobj = request.FILES['query']
 			jpeg_array = bytearray(fobj.read())
 			img = cv2.imdecode(np.asarray(jpeg_array), 1)
@@ -59,17 +67,30 @@ def upload_query(request):
 				wrd_pos = pickle.load(fobj)
 
 			positions = []
+			print(results[0])
 			for each in results[0]:
 				pos = [int(pos) for pos in wrd_pos[each]]
 				positions.append(pos)
-
+			print('Total time to process query', time.time()-begin)
 			request.session['results'] = results[0]
 			request.session['positions'] = positions
+			print(results[0])
 			return redirect('results')
-	else:
-		form = UploadForm()
+		if form2.is_valid():
+			name = form2.cleaned_data['name']
+			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
+			query = form2.cleaned_data['query'].encode('utf-8')
+			print('!!!!!!!!!!!!!!!!!', query)
 
-	context['form'] = form
+			return redirect('upload_query')
+	else:
+		form1 = ImSearchForm()
+		form2 = TxtSearchForm()
+
+	context['form1'] = form1
+	context['form2'] = form2
+	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
+	context['dpaths'] = paths
 
 	return render(request, page_template, context)
 
@@ -83,16 +104,35 @@ def show_image(request):
 
 
 def show_page(request):
+	begin = time.time()
 	path = request.session['path']
 	pos = request.session['pos']
-	print('!!!!!!!!!!!!!!!!!!!!!11', path, pos)
 	nimg = cv2.imread(path)
 	y1, y2, x1, x2 = pos
 	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
 	nimg = Image.fromarray(nimg)
 	response = HttpResponse(content_type="image/png")
 	nimg.save(response, "PNG")
+	print('Time to render total page', time.time()-begin)
 	return response
+
+
+def demo_results(request, img):
+	page_template = 'retrieval/demo_results.html'
+	context = {}
+
+	files = os.listdir('media/demo/output/'+img)
+	files.sort()
+	files_out =[[each[1:], '/media/demo/output/'+img+'/'+each] for each in files]
+	
+	paginator = Paginator(files_out, 6)
+
+	display_page = request.GET.get('page')
+	pages = paginator.get_page(display_page)
+
+	context['pages'] = pages
+	context['qimg'] = "/media/demo/imgs/"+img+".jpg"
+	return render(request, page_template, context) 
 
 
 def results(request):
@@ -100,10 +140,11 @@ def results(request):
 	
 	results = request.session['results']
 	collection_id = request.session['chosen_id']
-	
 	context = {}
 	pages = []
-	for each in results:
+	for i, each in enumerate(results):
+		## makign demo output
+		#copyfile("media/small_set/"+each, "media/demo/output/54/"+str(i)+each.split('/')[0]+'.jpg')
 		pages.append([each.split('/')[0]+'.jpg', each])
 	
 	paginator = Paginator(pages, 6)
