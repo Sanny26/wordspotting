@@ -50,10 +50,8 @@ def feature(image, model_path):
     ToTensor()
     ])
 
-    ## Image preprocessing
-    #image = rgb2gray(image)
+    begin = time.time()
     image, roi = preprocess(image, fontsize, transform_test) 
-        
     roi[:,0] = torch.arange(0,roi.size()[0])
 
     use_cuda = torch.cuda.is_available()
@@ -61,22 +59,22 @@ def feature(image, model_path):
         image, roi = image.cuda(), roi.cuda()
     
     image = image.unsqueeze(1)
-    begin = time.time()
+    ptime = time.time() - begin
+
     with torch.no_grad():
         roi = Variable(roi)
         inputs = Variable(image)
 
-        begin = time.time()
         ## Loading model
         net = ResNetROI34(num_classes=8135)
         #print('==> Resuming from checkpoint..')
         checkpoint = torch.load(model_path, map_location='cpu')
         net.load_state_dict(checkpoint)
         net.eval()
-        print('Model Load time', time.time()-begin)
+        begin = time.time()
         outputs, outFeats = net(inputs, roi)
         featData = outFeats.cpu().data.numpy()
-    print(begin-time.time())
+        print('Feature extract time', time.time()-begin)
     #L2 Normalize of features
     normVal = np.sqrt(np.sum(featData**2,axis=1))
     featData = featData/normVal[0]

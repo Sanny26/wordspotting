@@ -20,7 +20,6 @@ def query_word(query, kdtree_path, page_map_path, top_n=10):
     return q_retrieval
 
 
-
 if __name__ == "__main__":
     ann_file = "s_ann_file.txt"
     data_path = "data/small_set/"

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import time
 import os
 from shutil import copyfile
+import requests
 
 from .models import Collections
 from .forms import ImSearchForm, TxtSearchForm
@@ -40,9 +41,9 @@ def upload_query(request):
 	page2word_path = 'saved_models/page_to_word.p'
 	wrd_pos_fpath = 'saved_models/positions.pkl'
 	demo_path = 'media/demo/imgs/'
+	KERAS_REST_API_URL = "http://localhost:5000/predict"
 	
 	context = {}
-	chosen_id = request.session['chosen_id']
 	if request.method == 'POST':
 		form1 = ImSearchForm(request.POST, request.FILES)
 		form2 = TxtSearchForm(request.POST)
@@ -52,36 +53,21 @@ def upload_query(request):
 			begin = time.time()
 			fobj = request.FILES['query']
 			jpeg_array = bytearray(fobj.read())
+			payload = {"image": jpeg_array}
+			r = requests.post(KERAS_REST_API_URL, files=payload).json()
+			if r["success"]:
+				request.session['results'] = r["results"][0]
+				request.session['positions'] = r["positions"]
+
 			img = cv2.imdecode(np.asarray(jpeg_array), 1)
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-			img_feat = feature(img, model_path)
-
-			kdtree = open(kdtree_path, 'rb')
-			page2word = open(page2word_path, 'rb')
-
-			results = query_word(img_feat, kdtree, page2word) 
-
 			request.session['qimg'] = img.tolist()
-
-			with open(wrd_pos_fpath, 'rb') as fobj:
-				wrd_pos = pickle.load(fobj)
-
-			positions = []
-			print(results[0])
-			for each in results[0]:
-				pos = [int(pos) for pos in wrd_pos[each]]
-				positions.append(pos)
-			print('Total time to process query', time.time()-begin)
-			request.session['results'] = results[0]
-			request.session['positions'] = positions
-			print(results[0])
+			print('!!!!!!!!!!', request.session['results'], request.session['positions'])
 			return redirect('results')
 		if form2.is_valid():
 			name = form2.cleaned_data['name']
 			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
 			query = form2.cleaned_data['query'].encode('utf-8')
-			print('!!!!!!!!!!!!!!!!!', query)
-
 			return redirect('upload_query')
 	else:
 		form1 = ImSearchForm()
@@ -94,6 +80,66 @@ def upload_query(request):
 
 	return render(request, page_template, context)
 
+'''
+def upload_query(request):
+	page_template = 'retrieval/query.html'
+	model_path = 'saved_models/new-iam.t7'
+	kdtree_path = 'saved_models/mohanlal_kdtree.p'
+	page2word_path = 'saved_models/page_to_word.p'
+	wrd_pos_fpath = 'saved_models/positions.pkl'
+	demo_path = 'media/demo/imgs/'
+	
+	context = {}
+	if request.method == 'POST':
+		form1 = ImSearchForm(request.POST, request.FILES)
+		form2 = TxtSearchForm(request.POST)
+		if form1.is_valid():
+			name = form1.cleaned_data['name']
+			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
+			begin = time.time()
+			fobj = request.FILES['query']
+			jpeg_array = bytearray(fobj.read())
+			img = cv2.imdecode(np.asarray(jpeg_array), 1)
+			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+			img_feat = feature(img, model_path)
+			print('Total time to extract feature vector', time.time()-begin)
+
+			begin = time.time()
+			kdtree = open(kdtree_path, 'rb')
+			page2word = open(page2word_path, 'rb')
+			with open(wrd_pos_fpath, 'rb') as fobj:
+				wrd_pos = pickle.load(fobj)
+			print('Total time to load pickle files', time.time()-begin)
+
+			begin = time.time()
+			results = query_word(img_feat, kdtree, page2word) 
+			print('Total time to search in KD Tree', time.time()-begin)
+
+			request.session['qimg'] = img.tolist()
+
+			positions = []
+			for each in results[0]:
+				pos = [int(pos) for pos in wrd_pos[each]]
+				positions.append(pos)
+			request.session['results'] = results[0]
+			request.session['positions'] = positions
+			return redirect('results')
+		if form2.is_valid():
+			name = form2.cleaned_data['name']
+			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
+			query = form2.cleaned_data['query'].encode('utf-8')
+			return redirect('upload_query')
+	else:
+		form1 = ImSearchForm()
+		form2 = TxtSearchForm()
+
+	context['form1'] = form1
+	context['form2'] = form2
+	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
+	context['dpaths'] = paths
+
+	return render(request, page_template, context)
+'''
 
 def show_image(request):
 	qimg = np.array(request.session['qimg'])
