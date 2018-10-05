@@ -5,7 +5,8 @@ from . import views
 
 # use re_path for using it along with regular expressions
 urlpatterns = [
-	path('', views.upload_query, name='upload_query'),
+	path('', views.index, name='home'),
+	re_path(r'^query/(?P<cname>\w+)', views.upload_query, name='upload_query'),
 	path('results', views.results, name='results'),
 	path('show_image', views.show_image, name='show_image'),
 	#re_path(r'^show_page/(?P<pid>\d)', views.show_page, name='show_page'),
