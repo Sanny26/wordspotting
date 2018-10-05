@@ -19,22 +19,12 @@ from .extractFeature import feature
 def index(request):
 	page_template =  'retrieval/home.html'
 	context = {}
-	
-	if request.method == 'POST':
-		form = SelectForm(request.POST)
-		if form.is_valid():
-			name = form.cleaned_data['name']
-			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
-			return redirect('upload_query')
-	else:
-		form = SelectForm()
-
-	context['form'] = form
-
+	collections = Collections.objects.all().values_list('collection_name', flat=True) 
+	context['collections'] = collections
 	return render(request, page_template, context)
 
 
-def upload_query(request):
+def upload_query(request, cname):
 	page_template = 'retrieval/query.html'
 	model_path = 'saved_models/new-iam.t7'
 	kdtree_path = 'saved_models/mohanlal_kdtree.p'
@@ -43,30 +33,27 @@ def upload_query(request):
 	demo_path = 'media/demo/imgs/'
 	KERAS_REST_API_URL = "http://localhost:5000/predict"
 	
+	request.session['cname'] = cname
 	context = {}
 	if request.method == 'POST':
 		form1 = ImSearchForm(request.POST, request.FILES)
 		form2 = TxtSearchForm(request.POST)
 		if form1.is_valid():
-			name = form1.cleaned_data['name']
-			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
 			begin = time.time()
 			fobj = request.FILES['query']
 			jpeg_array = bytearray(fobj.read())
 			payload = {"image": jpeg_array}
+			begin = time.time()
 			r = requests.post(KERAS_REST_API_URL, files=payload).json()
 			if r["success"]:
 				request.session['results'] = r["results"][0]
 				request.session['positions'] = r["positions"]
-
+			print('Query processing time', time.time()-begin)
 			img = cv2.imdecode(np.asarray(jpeg_array), 1)
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 			request.session['qimg'] = img.tolist()
-			print('!!!!!!!!!!', request.session['results'], request.session['positions'])
 			return redirect('results')
 		if form2.is_valid():
-			name = form2.cleaned_data['name']
-			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
 			query = form2.cleaned_data['query'].encode('utf-8')
 			return redirect('upload_query')
 	else:
@@ -185,7 +172,7 @@ def results(request):
 	page_template = 'retrieval/results.html'
 	
 	results = request.session['results']
-	collection_id = request.session['chosen_id']
+	cname = request.session['cname']
 	context = {}
 	pages = []
 	for i, each in enumerate(results):
@@ -200,6 +187,7 @@ def results(request):
 
 	context['pages'] = pages
 	context['qimg'] = reverse('show_image')
+	context['cname'] = cname
 	return render(request, page_template, context) 
 
 
@@ -208,7 +196,7 @@ def view_results(request, pid):
 	
 	pid = int(pid)
 	results = request.session['results']
-	collection_id = request.session['chosen_id']
+	cname = request.session['cname']
 	positions = request.session['positions']
 
 	context = {}
@@ -230,4 +218,5 @@ def view_results(request, pid):
 		context['prev_pid'] = int(pid)-1
 	else:
 		context['prev_pid'] = -1
+	context['cname'] = cname
 	return render(request, page_template, context)

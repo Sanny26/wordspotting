@@ -14,6 +14,7 @@
         <div class="container">
                 <div class="col-lg-8 col-lg-offset-2 text-center">
                     <h3>WORDSPOTTING DEMO FOR INDIAN LANGUAGES</h3><br><br>
+                    <p style="float:right;"><a href={% url 'home' %}> Search in other collections </a></p>
                     <br><br>
                     <div class="row">
                     <ul class="nav nav-tabs">
@@ -54,7 +55,7 @@
 
 
                     <hr>
-                    <p class="small">Below given are a few example query images. Click on the images to get search results.</p>
+                    <!--p class="small">Below given are a few example query images. Click on the images to get search results.</p>
                     <table border="0" width="100%" ID="Table1" style="margin: 0px;">
                     <tr>{% for path, id in dpaths%}
                     {% if forloop.counter0 < 3 %}
@@ -67,7 +68,7 @@
                     <td><a href={% url 'demo_results' id %}><img src="{{path}}" style="padding:1px;border:1px solid #021a40;"></a></td>
                     {% endif %}
                     {% endfor %}</tr>
-                    </table>
+                    </table-->
 				</div>
         </div>
 </section>
