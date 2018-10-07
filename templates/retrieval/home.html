@@ -10,7 +10,7 @@
   <a href="#">Collections </a>
   
   {% for name in collections %}
-  <a href="{% url 'upload_query' name %}">{{name}}</a>
+  <a href="{% url 'upload_query' name.0 %}">{{name.1}}</a>
   {% endfor %}
 </div>
 
