@@ -20,20 +20,22 @@ def index(request):
 	page_template =  'retrieval/home.html'
 	context = {}
 	collections = Collections.objects.all().values_list('collection_name', flat=True) 
-	context['collections'] = collections
+	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
 
 def upload_query(request, cname):
 	page_template = 'retrieval/query.html'
-	model_path = 'saved_models/new-iam.t7'
-	kdtree_path = 'saved_models/mohanlal_kdtree.p'
-	page2word_path = 'saved_models/page_to_word.p'
-	wrd_pos_fpath = 'saved_models/positions.pkl'
 	demo_path = 'media/demo/imgs/'
-	KERAS_REST_API_URL = "http://localhost:5000/predict"
+	# KERAS_REST_API_URL = "http://localhost:5000/predict"
 	
 	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	collection = Collections.objects.filter(collection_name = Cname)[0]
+	model_path = collection.weights_path
+	kdtree_path = collection.kdtree_path
+	page2word_path = collection.page2word_path
+	wrd_pos_fpath = collection.wrd_pos_fpath
 	context = {}
 	if request.method == 'POST':
 		form1 = ImSearchForm(request.POST, request.FILES)
@@ -42,6 +44,9 @@ def upload_query(request, cname):
 			begin = time.time()
 			fobj = request.FILES['query']
 			jpeg_array = bytearray(fobj.read())
+			img = cv2.imdecode(np.asarray(jpeg_array), 1)
+			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+			'''
 			payload = {"image": jpeg_array}
 			begin = time.time()
 			r = requests.post(KERAS_REST_API_URL, files=payload).json()
@@ -49,45 +54,7 @@ def upload_query(request, cname):
 				request.session['results'] = r["results"][0]
 				request.session['positions'] = r["positions"]
 			print('Query processing time', time.time()-begin)
-			img = cv2.imdecode(np.asarray(jpeg_array), 1)
-			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-			request.session['qimg'] = img.tolist()
-			return redirect('results')
-		if form2.is_valid():
-			query = form2.cleaned_data['query'].encode('utf-8')
-			return redirect('upload_query')
-	else:
-		form1 = ImSearchForm()
-		form2 = TxtSearchForm()
-
-	context['form1'] = form1
-	context['form2'] = form2
-	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
-	context['dpaths'] = paths
-
-	return render(request, page_template, context)
-
-'''
-def upload_query(request):
-	page_template = 'retrieval/query.html'
-	model_path = 'saved_models/new-iam.t7'
-	kdtree_path = 'saved_models/mohanlal_kdtree.p'
-	page2word_path = 'saved_models/page_to_word.p'
-	wrd_pos_fpath = 'saved_models/positions.pkl'
-	demo_path = 'media/demo/imgs/'
-	
-	context = {}
-	if request.method == 'POST':
-		form1 = ImSearchForm(request.POST, request.FILES)
-		form2 = TxtSearchForm(request.POST)
-		if form1.is_valid():
-			name = form1.cleaned_data['name']
-			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
-			begin = time.time()
-			fobj = request.FILES['query']
-			jpeg_array = bytearray(fobj.read())
-			img = cv2.imdecode(np.asarray(jpeg_array), 1)
-			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+			request.session['qimg'] = img.tolist()'''
 			img_feat = feature(img, model_path)
 			print('Total time to extract feature vector', time.time()-begin)
 
@@ -102,6 +69,7 @@ def upload_query(request):
 			results = query_word(img_feat, kdtree, page2word) 
 			print('Total time to search in KD Tree', time.time()-begin)
 
+			print('!!!!!!!!!!!!!!!!!!!11', results)
 			request.session['qimg'] = img.tolist()
 
 			positions = []
@@ -110,12 +78,11 @@ def upload_query(request):
 				positions.append(pos)
 			request.session['results'] = results[0]
 			request.session['positions'] = positions
+			print(results[0], positions)
 			return redirect('results')
 		if form2.is_valid():
-			name = form2.cleaned_data['name']
-			request.session['chosen_id'] = Collections.objects.filter(collection_name = name)[0].id
 			query = form2.cleaned_data['query'].encode('utf-8')
-			return redirect('upload_query')
+			return redirect('upload_query', cname = cname)
 	else:
 		form1 = ImSearchForm()
 		form2 = TxtSearchForm()
@@ -126,7 +93,7 @@ def upload_query(request):
 	context['dpaths'] = paths
 
 	return render(request, page_template, context)
-'''
+
 
 def show_image(request):
 	qimg = np.array(request.session['qimg'])
@@ -140,6 +107,7 @@ def show_page(request):
 	begin = time.time()
 	path = request.session['path']
 	pos = request.session['pos']
+	print('---->', path, pos)
 	nimg = cv2.imread(path)
 	y1, y2, x1, x2 = pos
 	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
@@ -173,13 +141,21 @@ def results(request):
 	
 	results = request.session['results']
 	cname = request.session['cname']
+	positions = request.session['positions']
 	context = {}
 	pages = []
-	for i, each in enumerate(results):
-		## makign demo output
-		#copyfile("media/small_set/"+each, "media/demo/output/54/"+str(i)+each.split('/')[0]+'.jpg')
-		pages.append([each.split('/')[0]+'.jpg', each])
 	
+	## makign demo output
+	'''with open('media/demo/positions.txt') as file:
+		for i, each in enumerate(results):
+			copyfile("media/small_set/"+each, "media/demo/output/54/"+str(i)+each.split('/')[0]+'.jpg')
+			file.write(each.split('/')[0]+'.jpg', ", ".format(positions[i]))
+	file.close()'''
+		
+
+	for i, each in enumerate(results):
+		pages.append([each.split('/')[0]+'.jpg', each])
+
 	paginator = Paginator(pages, 6)
 
 	display_page = request.GET.get('page')
