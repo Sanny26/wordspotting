@@ -17,10 +17,10 @@
 					<br><br>
 					
 					{% if prev_pid >= 0 %}
-					<p><a href={% url 'view_results' next_pid %}> prev </a> | 
+					<p><a href={% url 'view_results' page prev_pid %}> prev </a> | 
 					{% endif %}					
 					{% if next_pid >= 0 %}
-					<a href={% url 'view_results' next_pid %}> next </a></p>
+					<a href={% url 'view_results' page next_pid %}> next </a></p>
 					{% endif %}			
 					
 					<h4>Search results</h4>

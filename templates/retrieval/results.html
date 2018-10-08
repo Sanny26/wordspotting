@@ -20,7 +20,7 @@
 					<tr>
 					{% for each in pages %}
 					{% if forloop.counter0 < 3 %}
-					<td><a href="{% url 'view_results' forloop.counter0%}">{{each.0}}</a></td>
+					<td><a href="{% url 'view_results' pages.number forloop.counter0 %}">{{each.0}}</a></td>				
 					{% endif %}
 					{% endfor %}</tr>
 					
@@ -36,7 +36,8 @@
 					<tr>
 					{% for each in pages %}
 					{% if forloop.counter0 >= 3 %}
-					<td><a href="{% url 'view_results' forloop.counter0%}">{{each.0}}</a></td>
+					<td><a href="{% url 'view_results' pages.number forloop.counter0 %}">{{each.0}}</a></td>
+
 					{% endif %}
 					{% endfor %}</tr>
 					

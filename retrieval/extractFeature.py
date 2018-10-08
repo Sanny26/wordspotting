@@ -76,8 +76,8 @@ def feature(image, model_path):
         featData = outFeats.cpu().data.numpy()
         print('Feature extract time', time.time()-begin)
     #L2 Normalize of features
-    normVal = np.sqrt(np.sum(featData**2,axis=1))
-    featData = featData/normVal[0]
+    #normVal = np.sqrt(np.sum(featData**2,axis=1))
+    #featData = featData/normVal[0]
 
     return featData
 

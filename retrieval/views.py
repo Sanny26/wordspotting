@@ -69,7 +69,7 @@ def upload_query(request, cname):
 			results = query_word(img_feat, kdtree, page2word) 
 			print('Total time to search in KD Tree', time.time()-begin)
 
-			print('!!!!!!!!!!!!!!!!!!!11', results)
+			#print('!!!!!!!!!!!!!!!!!!!11', results)
 			request.session['qimg'] = img.tolist()
 
 			positions = []
@@ -78,7 +78,7 @@ def upload_query(request, cname):
 				positions.append(pos)
 			request.session['results'] = results[0]
 			request.session['positions'] = positions
-			print(results[0], positions)
+			#print(results[0], positions)
 			return redirect('results')
 		if form2.is_valid():
 			query = form2.cleaned_data['query'].encode('utf-8')
@@ -167,15 +167,18 @@ def results(request):
 	return render(request, page_template, context) 
 
 
-def view_results(request, pid):
+def view_results(request, page, pid):
 	page_template = 'retrieval/view_results.html'
 	
 	pid = int(pid)
+	page = int(page)
 	results = request.session['results']
 	cname = request.session['cname']
 	positions = request.session['positions']
 
 	context = {}
+	if page!=0:
+		pid = (page-1)*6 + pid
 	path = results[pid]
 	pos = positions[pid]
 	nimg_path = "media/cleaned/"+path.split('/')[0]+'.jpg'
@@ -188,11 +191,15 @@ def view_results(request, pid):
 	context['pid'] = pid
 	if pid!=(len(results)-1):
 		context['next_pid'] = pid+1
+		context['page'] = 0
 	else:
 		context['next_pid'] = -1
+		context['page'] = 0
 	if pid>0:
 		context['prev_pid'] = int(pid)-1
+		context['page'] = 0
 	else:
 		context['prev_pid'] = -1
+		context['page'] = 0
 	context['cname'] = cname
 	return render(request, page_template, context)
