@@ -91,6 +91,7 @@ def upload_query(request, cname):
 	context['form2'] = form2
 	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
 	context['dpaths'] = paths
+	context['Cname'] = Cname
 
 	return render(request, page_template, context)
 
@@ -144,7 +145,11 @@ def results(request):
 	positions = request.session['positions']
 	context = {}
 	pages = []
+	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	context['Cname'] = Cname
 	
+
 	## makign demo output
 	'''with open('media/demo/positions.txt') as file:
 		for i, each in enumerate(results):
@@ -177,6 +182,12 @@ def view_results(request, page, pid):
 	positions = request.session['positions']
 
 	context = {}
+
+	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	context['Cname'] = Cname
+	
+
 	if page!=0:
 		pid = (page-1)*6 + pid
 	path = results[pid]
