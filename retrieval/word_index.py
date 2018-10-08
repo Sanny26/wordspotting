@@ -7,7 +7,8 @@ def query_word(query, kdtree_path, page_map_path, top_n=10):
     kdtree = pickle.load(kdtree_path)
     page_map = pickle.load(page_map_path)
 
-    _, q_indices = kdtree.query(query, k = top_n)
+    distances, q_indices = kdtree.query(query, k = top_n)
+    print(distances)
 
     q_retrieval = list()
     for index in q_indices:
