@@ -10,7 +10,7 @@
   <a href="#">Collections </a>
   
   {% for name in collections %}
-  <a href="{% url 'upload_query' name.0 %}">{{name.1}}</a>
+  <a href="{% url 'chome' name.0 %}">{{name.1}}</a>
   {% endfor %}
 </div>
 
@@ -19,15 +19,12 @@
   <div class="col-lg-12">
                 
       <h3 class="text-center">WORDSPOTTING DEMO FOR INDIAN LANGUAGES</h3><br><br>
-      <br><br>
+      <br>
       <p>
         This application is built to retrieve relevant pages from the collections based on the input word given by the user. All the collections from which a user can search are displayed in the side panel.
-        <br><br>
-        Input to the system can be given in two ways:
-        <ul class="list-group"> 
-          <li class="list-group-item"><p>Text in the script. Example query word for Mohanlal blog collection is നിങ്ങൾ</p></li>
-          <li class="list-group-item"><p>Image of written word. Example query image for Mohanlal blog collection, <img src="/media/demo/5.jpg"></p></li>
-        </ul>
+        <figure class="text-center">
+        <img src="media/demo/system.png">
+        </figure>
       </p>      
                   
   </div>

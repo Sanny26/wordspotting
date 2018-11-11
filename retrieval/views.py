@@ -23,6 +23,21 @@ def index(request):
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
+def collection_index(request, cname):
+	page_template = 'retrieval/chome.html'
+	context = {}
+	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	collection = Collections.objects.filter(collection_name = Cname)[0]
+	context['desc'] = collection.desc
+	context['Cname'] = Cname
+	context['cname'] = cname
+	if collection.collection_link != '':
+		context['url'] = collection.collection_link
+
+	return render(request, page_template, context)
+
+
 
 def upload_query(request, cname):
 	page_template = 'retrieval/query.html'
