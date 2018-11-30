@@ -16,6 +16,12 @@ from .forms import ImSearchForm, TxtSearchForm
 from .word_index import query_word
 from .extractFeature import feature
 
+def test(request):
+	page_template = 'retrieval/layouts2.html'
+	context = {}
+	return render(request, page_template, context)
+
+
 def index(request):
 	page_template =  'retrieval/home.html'
 	context = {}
