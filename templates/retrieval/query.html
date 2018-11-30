@@ -1,16 +1,80 @@
 {% extends "base.html" %}
 
 {% block css %}
-    {% include "retrieval/template_css.html" %}
-    <link rel="stylesheet" href="static/css/purejscarousel.css">
-    <!--script src="static/js/carousel.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script-->
+    <{% include "retrieval/template_css.html" %}>
+    <link href="static/keyboard_css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/keyboard_css/font-awesome.min.css" rel="stylesheet">
+    <link href="static/keyboard_css/demo.css" rel="stylesheet">
 
+    <!-- jQuery & jQuery UI + theme (required) -->
+    <link href="static/keyboard_css/jquery-ui.min.css" rel="stylesheet">
+    <script src="static/keyboard_js/jquery-latest.min.js"></script>
+    <script src="static/keyboard_js/jquery-ui.min.js"></script>
+    <script src="static/keyboard_js/bootstrap.min.js"></script>
+
+    <!-- keyboard widget css & script (required) -->
+    <link href="static/keyboard_css/keyboard.css" rel="stylesheet">
+    <link href="static/keyboard_css/keyboard-previewkeyset.css" rel="stylesheet">
+    <script src="static/keyboard_js/jquery.keyboard.js"></script>
+
+    <!-- keyboard extensions (optional) -->
+    <script src="static/keyboard_js/jquery.mousewheel.js"></script>
+    <script src="static/keyboard_js/jquery.keyboard.extension-typing.js"></script>
+    <script src="static/keyboard_js/jquery.keyboard.extension-previewkeyset.js"></script>
+
+    <!-- preloaded keyboard layout -->
+    <script src="static/layouts/keyboard-layouts-greywyvern.js" charset="utf-8"></script>
+    <script>
+  $(function(){
+
+
+    // Change display language, if the definitions are available
+    showKb = function(layout){
+      var kb = $('#multi').getkeyboard();
+      kb.options.layout = layout;
+      // redraw keyboard with new layout
+      kb.redraw();
+    };
+
+    $('#multi').keyboard({
+      layout: 'qwerty',
+      stayOpen: true
+    })
+    // activate the typing extension
+    .addTyping({
+      showTyping: true,
+      delay: 200
+    })
+    .previewKeyset();
+
+    $('#lang')
+      .change(function(){
+        var kb = $('#multi'),
+          layout = 'ml';
+        showKb( layout );
+      }).trigger('change');
+  });
+  </script>
+  <style>
+  .rtl {
+    text-align: right;
+  }
+  </style>
 {% endblock %}
 
 {% block content %}
+<div id="page-wrap">
 
-<section id="about">
+  <div class="block2">
+
+    <h2 id="lang"></h2>
+    <input id="multi" type="text" />
+  </div>
+
+  <br class="clear" />
+</div>
+
+<!--section id="about">
         <div class="container">
                 <div class="col-lg-8 col-lg-offset-2 text-center">
                     <h3>Wordspotting Demo For {{Cname}}</h3><br><br>
@@ -49,29 +113,23 @@
                                 <input type="submit" value="Search for the query" />
                             </div>    
                          </form>
+                        <div id="page-wrap">
+
+                          <div class="block2">
+
+                            <h2 id="lang"></h2>
+                            <input id="multi" type="text" />
+                          </div>
+
+                          <br class="clear" />
+                        </div>
+
                       </div>
                     </div>
                       <br><br>
-
-
-                    <hr>
-                    <!--p class="small">Below given are a few example query images. Click on the images to get search results.</p>
-                    <table border="0" width="100%" ID="Table1" style="margin: 0px;">
-                    <tr>{% for path, id in dpaths%}
-                    {% if forloop.counter0 < 3 %}
-                    <td><a href={% url 'demo_results' id %}><img src="{{path}}" style="padding:1px;border:1px solid #021a40;"></a></td>
-                    {% endif %}
-                    {% endfor %}</tr>
-
-                    <tr>{% for path, id in dpaths%}
-                    {% if forloop.counter0 > 3 and forloop.counter0 < 7 %}
-                    <td><a href={% url 'demo_results' id %}><img src="{{path}}" style="padding:1px;border:1px solid #021a40;"></a></td>
-                    {% endif %}
-                    {% endfor %}</tr>
-                    </table-->
 				</div>
         </div>
-</section>
+</section-->
 
 {% endblock %}
 

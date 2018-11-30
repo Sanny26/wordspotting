@@ -14,5 +14,5 @@ urlpatterns = [
 	path('show_page', views.show_page, name='show_page'),
 	re_path(r'^view_results/(?P<page>\d)/(?P<pid>\d)/$', views.view_results, name='view_results'),
 	re_path(r'^result/(?P<img>\w+)/$', views.demo_results, name='demo_results'),
-	
+	path('test', views.test, name='test'),
 	]
