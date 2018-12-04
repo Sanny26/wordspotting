@@ -16,9 +16,18 @@ from .forms import ImSearchForm, TxtSearchForm
 from .word_index import query_word
 from .extractFeature import feature
 
-def test(request):
+def text_query(request):
 	page_template = 'retrieval/layouts2.html'
+	demo_path = 'media/demo/imgs/'
 	context = {}
+	cname = request.session['cname']
+	Cname = cname.replace('_', ' ')
+	context['Cname'] = Cname
+	context['cname'] = cname
+	if request.method == 'POST':
+		query = request.POST['text_query']
+		print(query)
+		return redirect('chome', cname)
 	return render(request, page_template, context)
 
 
@@ -45,12 +54,12 @@ def collection_index(request, cname):
 
 
 
-def upload_query(request, cname):
+def image_query(request):
 	page_template = 'retrieval/query.html'
 	demo_path = 'media/demo/imgs/'
 	# KERAS_REST_API_URL = "http://localhost:5000/predict"
 	
-	request.session['cname'] = cname
+	cname = request.session['cname']
 	Cname = cname.replace('_', ' ')
 	collection = Collections.objects.filter(collection_name = Cname)[0]
 	model_path = collection.weights_path
@@ -60,7 +69,6 @@ def upload_query(request, cname):
 	context = {}
 	if request.method == 'POST':
 		form1 = ImSearchForm(request.POST, request.FILES)
-		form2 = TxtSearchForm(request.POST)
 		if form1.is_valid():
 			begin = time.time()
 			fobj = request.FILES['query']
@@ -90,7 +98,6 @@ def upload_query(request, cname):
 			results = query_word(img_feat, kdtree, page2word) 
 			print('Total time to search in KD Tree', time.time()-begin)
 
-			#print('!!!!!!!!!!!!!!!!!!!11', results)
 			request.session['qimg'] = img.tolist()
 
 			positions = []
@@ -99,20 +106,18 @@ def upload_query(request, cname):
 				positions.append(pos)
 			request.session['results'] = results[0]
 			request.session['positions'] = positions
-			#print(results[0], positions)
 			return redirect('results')
 		if form2.is_valid():
 			query = form2.cleaned_data['query'].encode('utf-8')
 			return redirect('upload_query', cname = cname)
 	else:
 		form1 = ImSearchForm()
-		form2 = TxtSearchForm()
 
 	context['form1'] = form1
-	context['form2'] = form2
 	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
 	context['dpaths'] = paths
 	context['Cname'] = Cname
+	context['cname'] = cname
 
 	return render(request, page_template, context)
 

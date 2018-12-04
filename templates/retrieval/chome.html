@@ -24,7 +24,11 @@
       <h6>Information about the collection.</h6>
       <p>Chosen Collection: {{Cname}}</p>
       <p>
+        {% if desc %}
         {{desc | safe}}<br>
+        {% else %}
+        No information available about this collection.<br>
+        {% endif %}
         {% if url %}
         More information about this collection can be found at this <a href="{{url}}">link</a> 
         {% endif %}
@@ -45,15 +49,15 @@
         <ul class="list-group"> 
           <li class="list-group-item">The system takes two types of queries for retrieving document images. Different possible queries are desribed below.
             <ul>
-              <li>Query in the form of text. Multiple words can also given at the same time. A virtual keyboard on clicking inside the textbox area. Use the keyboard to enter a query. Example query word for the above collection is നിങ്ങൾ.</li>
-              <li>Query in the form of an image containing the word. Click on the upload button to choose a word image from your file system. Example query image for Mohanlal blog collection, <img src="/media/demo/5.jpg"></li>
+              <li>Query in the form of text. Use the virtual keyboard to enter a query.<br>Example query word for the above collection is <b>നിങ്ങൾ</b>. Multiple words can also given at the same time.</li>
+              <li>Query in the form of an image containing the word. Upload a word image using the file upload option. <br>Example query image for Mohanlal blog collection, <img src="/media/demo/5.jpg"></li>
             </ul>
           </li>
           <li class="list-group-item">After choosing a query, click on the search button to search for the query. You will be lead to page displaying the ranked results. Click on any of the word images to open the whole document.</li>
           <li class="list-group-item">The matched word will be highlighted in the opened document.</li>
         </ul>
 
-    <p>Web Demo for the retrieval system: <a href="{% url 'upload_query' cname %}">Click here</a></p> 
+    <p>Web Demo for the retrieval system: <a href="{% url 'text_query' %}">Click here</a></p> 
   </div>         
   </div> 
 </section>
