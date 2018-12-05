@@ -105,4 +105,4 @@ venv.bak/
 
 saved_models/*
 retrieval/migrations/*
-#media/*
+media/*

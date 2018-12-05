@@ -12,6 +12,7 @@ class Collections(models.Model):
 	kdtree_path = models.CharField(max_length=200, blank='True')
 	page2word_path = models.CharField(max_length=200, blank='True')
 	wrd_pos_fpath = models.CharField(max_length=200, blank='True')
+	words_path = models.CharField(max_length=200, blank='True')
 	demo_path = models.CharField(max_length=200, blank='True')
 
 	def __str__(self):
