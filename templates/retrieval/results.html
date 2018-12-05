@@ -9,9 +9,17 @@
       <div class="container">
                 <div class="col-lg-12 text-center">
                 	<h3>WORDSPOTTING DEMO FOR {{Cname}}</h3>
+                	{% if ftype == 'img' %}
                 	<p style="float:right;"><a href="{% url 'upload_query' %}"> Search for another word </a></p><br><br>
-					<h4>Query image </h4>
+					{% else %}
+					<p style="float:right;"><a href="{% url 'text_query' %}"> Search for another word </a></p><br><br>
+					{% endif %}
+					<h4>Query</h4>
+					{% if ftype == 'img' %}
 					<img src="{{qimg}}" />
+					{% else %}
+					<p><font size="10">{{qimg}}</font></p>
+					{% endif %}
 
 					<br><h4>Search results</h4>
 					<br>
@@ -26,7 +34,7 @@
 					
 					<tr>{% for each in pages %}
 					{% if forloop.counter0 < 3 %}
-					<td><img src="media/small_set/{{each.1}}"></td>
+					<td><img src="{{word_path}}/{{each.1}}" height="60" width="150"></td>
 					{% endif %}
 					{% endfor %}</tr>
 					</table>
@@ -43,7 +51,7 @@
 					
 					<tr>{% for each in pages %}
 					{% if forloop.counter0 >= 3 %}
-					<td><img src="media/small_set/{{each.1}}"></td>
+					<td><img src="{{word_path}}/{{each.1}}" height="60" width="150"></td>
 					{% endif %}
 					{% endfor %}</tr>
 					</table>

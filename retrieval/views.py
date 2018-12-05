@@ -15,6 +15,7 @@ from .models import Collections
 from .forms import ImSearchForm, TxtSearchForm
 from .word_index import query_word
 from .extractFeature import feature
+from .E2Efeat import imgFeat, txtFeat
 
 def text_query(request):
 	page_template = 'retrieval/layouts2.html'
@@ -24,10 +25,34 @@ def text_query(request):
 	Cname = cname.replace('_', ' ')
 	context['Cname'] = Cname
 	context['cname'] = cname
+	collection = Collections.objects.filter(collection_name = Cname)[0]
+	model_path = collection.weights_path
+	kdtree_path = collection.kdtree_path
+	page2word_path = collection.page2word_path
+	wrd_pos_fpath = collection.wrd_pos_fpath
+	# kdtree_path = 'saved_models/e2e_model/kdtree_synthfeat.p'
 	if request.method == 'POST':
 		query = request.POST['text_query']
-		print(query)
-		return redirect('chome', cname)
+		model_path = '/home/sanny/ckpt_best.t7'
+		feat, img = txtFeat(query, model_path)
+
+		kdtree = open(kdtree_path, 'rb')
+		page2word = open(page2word_path, 'rb')
+		with open(wrd_pos_fpath, 'rb') as fobj:
+			wrd_pos = pickle.load(fobj)
+		
+		results = query_word(feat, kdtree, page2word) 
+		request.session['qimg'] = query
+
+		positions = []
+		for each in results[0]:
+			pos = [int(pos) for pos in wrd_pos[each]]
+			positions.append(pos)
+		request.session['results'] = results[0]
+		request.session['positions'] = positions
+		request.session['ftype'] = 'txt'
+		return redirect('results')
+	
 	return render(request, page_template, context)
 
 
@@ -84,7 +109,9 @@ def image_query(request):
 				request.session['positions'] = r["positions"]
 			print('Query processing time', time.time()-begin)
 			request.session['qimg'] = img.tolist()'''
-			img_feat = feature(img, model_path)
+			
+			# img_feat = feature(img, model_path)
+			img_feat = imgFeat(img, model_path)
 			print('Total time to extract feature vector', time.time()-begin)
 
 			begin = time.time()
@@ -106,10 +133,8 @@ def image_query(request):
 				positions.append(pos)
 			request.session['results'] = results[0]
 			request.session['positions'] = positions
+			request.session['ftype'] = 'img'
 			return redirect('results')
-		if form2.is_valid():
-			query = form2.cleaned_data['query'].encode('utf-8')
-			return redirect('upload_query', cname = cname)
 	else:
 		form1 = ImSearchForm()
 
@@ -134,7 +159,6 @@ def show_page(request):
 	begin = time.time()
 	path = request.session['path']
 	pos = request.session['pos']
-	print('---->', path, pos)
 	nimg = cv2.imread(path)
 	y1, y2, x1, x2 = pos
 	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
@@ -174,6 +198,8 @@ def results(request):
 	request.session['cname'] = cname
 	Cname = cname.replace('_', ' ')
 	context['Cname'] = Cname
+	collection = Collections.objects.filter(collection_name = Cname)[0]
+	context['word_path'] = collection.words_path
 	
 
 	## makign demo output
@@ -193,8 +219,12 @@ def results(request):
 	pages = paginator.get_page(display_page)
 
 	context['pages'] = pages
-	context['qimg'] = reverse('show_image')
+	if request.session['ftype'] == 'img':
+		context['qimg'] = reverse('show_image')
+	else:
+		context['qimg'] = request.session['qimg']
 	context['cname'] = cname
+	context['ftype'] = request.session['ftype']
 	return render(request, page_template, context) 
 
 
@@ -218,13 +248,16 @@ def view_results(request, page, pid):
 		pid = (page-1)*6 + pid
 	path = results[pid]
 	pos = positions[pid]
-	nimg_path = "media/cleaned/"+path.split('/')[0]+'.jpg'
-	context['qimg'] = reverse('show_image')
-	#request.session['nimg'] = nimg.tolist()
+	nimg_path = "media/uploads/"+path.split('/')[0]+'.jpg'
+
+	if request.session['ftype'] == 'img':
+		context['qimg'] = reverse('show_image')
+	else:
+		context['qimg'] = request.session['qimg']
 	request.session['path'] = nimg_path
 	request.session['pos'] = pos
 	context['nimg'] = reverse('show_page')
-
+	context['ftype'] = request.session['ftype']
 	context['pid'] = pid
 	if pid!=(len(results)-1):
 		context['next_pid'] = pid+1
