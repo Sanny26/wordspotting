@@ -20,7 +20,7 @@
                 
     <h3 class="text-center"><a href="{% url 'home' %}">WORDSPOTTING DEMO FOR INDIAN LANGUAGES</a></h3><br>
     <div class="row">
-    <div class="col-sm-6 well well-sm">
+    <div class="col-sm-8 well well-sm">
       <h6>Information about the collection.</h6>
       <p>Chosen Collection: {{Cname}}</p>
       <p>
@@ -34,26 +34,17 @@
         {% endif %}
       </p>
     </div>
-    <div class="col-sm-6 well well-sm">
-      <h6>Sample Queries</h6>
-      <p>Chosen Collection: {{cname}}</p>
-      <p>
-        {{desc | safe}}<br>
-        {% if url %}
-        More information about this collection can be found at this <a href="{{url}}">link</a> 
-        {% endif %}
-      </p>
-    </div></div>
+    </div>
     <div class="row">
     <h4>Instructions to use the demo application</h4>
         <ul class="list-group"> 
           <li class="list-group-item">The system takes two types of queries for retrieving document images. Different possible queries are desribed below.
             <ul>
-              <li>Query in the form of text. Use the virtual keyboard to enter a query.<br>Example query word for the above collection is <b>നിങ്ങൾ</b>. Multiple words can also given at the same time.</li>
-              <li>Query in the form of an image containing the word. Upload a word image using the file upload option. <br>Example query image for Mohanlal blog collection, <img src="/media/demo/5.jpg"></li>
+              <li>Query by text. Use the virtual keyboard to enter a query.<br>Example query word for the above collection is <b>നിങ്ങൾ</b>. Multiple words can also given at the same time.</li>
+              <li>Query by exmaple image. Upload a word image using the file upload option. <br>Example query image for Mohanlal blog collection, <img src="/media/demo/5.jpg"></li>
             </ul>
           </li>
-          <li class="list-group-item">After choosing a query, click on the search button to search for the query. You will be lead to page displaying the ranked results. Click on any of the word images to open the whole document.</li>
+          <li class="list-group-item">Click on the search button to search for the query. You will be lead to page displaying the ranked results. Click on any of the word images to open the whole document.</li>
           <li class="list-group-item">The matched word will be highlighted in the opened document.</li>
         </ul>
 

@@ -33,7 +33,6 @@ def text_query(request):
 	# kdtree_path = 'saved_models/e2e_model/kdtree_synthfeat.p'
 	if request.method == 'POST':
 		query = request.POST['text_query']
-		model_path = '/home/sanny/ckpt_best.t7'
 		feat, img = txtFeat(query, model_path)
 
 		kdtree = open(kdtree_path, 'rb')

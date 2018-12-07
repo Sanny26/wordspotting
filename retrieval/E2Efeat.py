@@ -34,8 +34,8 @@ def l2Normalize(inputTensor):
     return normTensor
 
 def synthesizeImage(rText):
-    font_path = 'saved_models/Karumbi.ttf'
-
+    font_path = 'saved_models/lipi.ttf'
+    rText.encode('utf-8')
     rFontIdx = 0
     fontsize = 48
     font = ImageFont.truetype(font_path, fontsize)
