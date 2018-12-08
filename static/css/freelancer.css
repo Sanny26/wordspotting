@@ -16,6 +16,10 @@ p {
 p.small {
   font-size: 12px;
 }
+
+p.large {
+  font-size: 20px;
+}
 a,
 a:hover,
 a:focus,
