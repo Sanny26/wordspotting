@@ -34,7 +34,7 @@ def l2Normalize(inputTensor):
     return normTensor
 
 def synthesizeImage(rText):
-    font_path = 'saved_models/lipi.ttf'
+    font_path = 'saved_models/Lohit-Malayalam.ttf'
     rText.encode('utf-8')
     rFontIdx = 0
     fontsize = 48
@@ -59,7 +59,6 @@ def synthesizeImage(rText):
     roi = np.asarray([0.0, min(cords[1]),min(cords[0]),max(cords[1]),max(cords[0])],dtype=np.float32)
 
     sample = {'image': image, 'roi': roi}
-    cv2.imwrite('synthimg.jpg', image)
     return sample
 
 def phocVec(text):
@@ -152,23 +151,25 @@ def txtFeat(text, pretrained_path, synthArch='roi', embedSize=2048, testAug=Fals
         synthNet.eval()
         embedNet.eval()
 
-        inputs_2, roi_2, phoc, synth_img = preprocess_text(text, tSize, transform_test)        
-        
-        with torch.set_grad_enabled(False):
-            roi_2[:,0] = torch.arange(0,roi_2.size()[0])
-
-            if use_cuda:
-                inputs_2, roi_2, phoc = inputs_2.cuda(), roi_2.cuda(), phoc.cuda()
-
-            inputs_2 = inputs_2.unsqueeze(1)
+        features = []
+        for word in text:
+            inputs_2, roi_2, phoc, synth_img = preprocess_text(word, tSize, transform_test)        
             
-            outSynthFeats = synthNet(inputs_2, roi_2, phoc)
-            outSynthFeats = l2Normalize(outSynthFeats)
-            outSynthClassScores, outSynthEmbed = embedNet(outSynthFeats)
+            with torch.set_grad_enabled(False):
+                roi_2[:,0] = torch.arange(0,roi_2.size()[0])
 
-            outSynthEmbed = l2Normalize(outSynthEmbed)
-            featSynthData = outSynthEmbed.cpu().data.numpy()
+                if use_cuda:
+                    inputs_2, roi_2, phoc = inputs_2.cuda(), roi_2.cuda(), phoc.cuda()
 
+                inputs_2 = inputs_2.unsqueeze(1)
+                
+                outSynthFeats = synthNet(inputs_2, roi_2, phoc)
+                outSynthFeats = l2Normalize(outSynthFeats)
+                outSynthClassScores, outSynthEmbed = embedNet(outSynthFeats)
+
+                outSynthEmbed = l2Normalize(outSynthEmbed)
+                featSynthData = outSynthEmbed.cpu().data.numpy()
+                features.append(featSynthData[0,:])
     # to do: for test augmentation
     # if args.featType<=1:
     #     maxFeatMat = np.amax(featImgMat,axis=0)
@@ -176,7 +177,7 @@ def txtFeat(text, pretrained_path, synthArch='roi', embedSize=2048, testAug=Fals
     #     maxSynthMat = np.amax(featSynthMat,axis=0)
 
     ## converting synthetic image tensor to numpy
-    return featSynthData, synth_img
+    return np.array(features)
 
 
 def imgFeat(img, pretrained_path, arch='resnetROI34SPP',embedSize=2048, testAug = False):
