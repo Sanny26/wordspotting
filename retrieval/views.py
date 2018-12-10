@@ -33,25 +33,57 @@ def text_query(request):
 	# kdtree_path = 'saved_models/e2e_model/kdtree_synthfeat.p'
 	if request.method == 'POST':
 		query = request.POST['text_query']
-		feat, img = txtFeat(query, model_path)
+		query = query.split()
+		features = txtFeat(query, model_path)
 
 		kdtree = open(kdtree_path, 'rb')
 		page2word = open(page2word_path, 'rb')
 		with open(wrd_pos_fpath, 'rb') as fobj:
 			wrd_pos = pickle.load(fobj)
 		
-		results = query_word(feat, kdtree, page2word) 
-		request.session['qimg'] = query
+		phrase_results = query_word(features, kdtree, page2word)
+		request.session['qimg'] = ' '.join(query)
 
-		positions = []
-		for each in results[0]:
-			pos = [int(pos) for pos in wrd_pos[each]]
-			positions.append(pos)
-		request.session['results'] = results[0]
-		request.session['positions'] = positions
-		request.session['ftype'] = 'txt'
-		return redirect('results')
-	
+		if len(query) == 1:
+			for results in phrase_results: 
+				positions = []
+				for each in results:
+					pos = [int(pos) for pos in wrd_pos[each]]
+					positions.append(pos)
+			request.session['results'] = phrase_results[0]
+			request.session['positions'] = positions
+			request.session['ftype'] = 'txt'
+			return redirect('results')
+		else:
+			combined_results = []
+			word_results = []
+			for results in phrase_results:
+				for result in results:
+					doc_name, word_name = result.split('/')
+					if doc_name not in combined_results:
+						combined_results.append(doc_name)
+						word_results.append([word_name])
+					else:
+						ind = combined_results.index(doc_name)
+						word_results[ind].append(word_name)
+
+			for i in range(len(combined_results)):
+				word_results[i].append(combined_results[i])
+			word_results.sort(key=len, reverse=True)
+			positions = []
+			for page in word_results:
+				page_pos = []
+				for word in page[:-1]:
+					word = page[-1] +'/'+word
+					pos = [int(pos) for pos in wrd_pos[word]]
+					page_pos.append(pos)
+				positions.append(page_pos)
+			request.session['results'] = word_results
+			request.session['positions'] = positions
+			request.session['ftype'] = 'txt'
+			
+			return redirect('mresults', page=0)
+
 	return render(request, page_template, context)
 
 
@@ -76,11 +108,8 @@ def collection_index(request, cname):
 
 	return render(request, page_template, context)
 
-
-
 def image_query(request):
 	page_template = 'retrieval/query.html'
-	demo_path = 'media/demo/imgs/'
 	# KERAS_REST_API_URL = "http://localhost:5000/predict"
 	
 	cname = request.session['cname']
@@ -90,6 +119,7 @@ def image_query(request):
 	kdtree_path = collection.kdtree_path
 	page2word_path = collection.page2word_path
 	wrd_pos_fpath = collection.wrd_pos_fpath
+	demo_path = collection.demo_path
 	context = {}
 	if request.method == 'POST':
 		form1 = ImSearchForm(request.POST, request.FILES)
@@ -138,13 +168,12 @@ def image_query(request):
 		form1 = ImSearchForm()
 
 	context['form1'] = form1
-	paths = [[demo_path+file,file.split('.')[0]] for file in os.listdir(demo_path)]
+	paths = [demo_path+'/'+file for file in os.listdir(demo_path)]
+	paths.sort()
 	context['dpaths'] = paths
 	context['Cname'] = Cname
 	context['cname'] = cname
-
 	return render(request, page_template, context)
-
 
 def show_image(request):
 	qimg = np.array(request.session['qimg'])
@@ -153,38 +182,59 @@ def show_image(request):
 	qimg.save(response, "PNG")
 	return response
 
-
 def show_page(request):
 	begin = time.time()
 	path = request.session['path']
 	pos = request.session['pos']
 	nimg = cv2.imread(path)
-	y1, y2, x1, x2 = pos
-	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
+	if request.session['mflag'] == 0:
+		y1, y2, x1, x2 = pos
+		nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
+	else:
+		for each in pos:
+			y1, y2, x1, x2 = each
+			nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)	
+
 	nimg = Image.fromarray(nimg)
 	response = HttpResponse(content_type="image/png")
 	nimg.save(response, "PNG")
 	print('Time to render total page', time.time()-begin)
 	return response
 
+def demo_results(request, im_id):
+	cname = request.session['cname']
+	Cname = cname.replace('_', ' ')
+	collection = Collections.objects.filter(collection_name = Cname)[0]
+	demo_path = collection.demo_path
+	model_path = collection.weights_path
+	kdtree_path = collection.kdtree_path
+	page2word_path = collection.page2word_path
+	wrd_pos_fpath = collection.wrd_pos_fpath
 
-def demo_results(request, img):
-	page_template = 'retrieval/demo_results.html'
-	context = {}
-
-	files = os.listdir('media/demo/output/'+img)
-	files.sort()
-	files_out =[[each[1:], '/media/demo/output/'+img+'/'+each] for each in files]
+	paths = [demo_path+'/'+file for file in os.listdir(demo_path)]
+	paths.sort()
+	img_path = paths[int(im_id)-1]
+	print(img_path)
+	img = cv2.imread(img_path, 0)
+	img_feat = imgFeat(img, model_path)
+	kdtree = open(kdtree_path, 'rb')
+	page2word = open(page2word_path, 'rb')
+	with open(wrd_pos_fpath, 'rb') as fobj:
+		wrd_pos = pickle.load(fobj)
 	
-	paginator = Paginator(files_out, 6)
+	begin = time.time()
+	results = query_word(img_feat, kdtree, page2word) 
+	
+	request.session['qimg'] = img.tolist()
 
-	display_page = request.GET.get('page')
-	pages = paginator.get_page(display_page)
-
-	context['pages'] = pages
-	context['qimg'] = "/media/demo/imgs/"+img+".jpg"
-	return render(request, page_template, context) 
-
+	positions = []
+	for each in results[0]:
+		pos = [int(pos) for pos in wrd_pos[each]]
+		positions.append(pos)
+	request.session['results'] = results[0]
+	request.session['positions'] = positions
+	request.session['ftype'] = 'img'
+	return redirect('results')
 
 def results(request):
 	page_template = 'retrieval/results.html'
@@ -226,6 +276,33 @@ def results(request):
 	context['ftype'] = request.session['ftype']
 	return render(request, page_template, context) 
 
+def mresults(request, page):
+	page_template = 'retrieval/mresults.html'
+	context = {}
+	word_results = request.session['results']
+	positions = request.session['positions']
+	cname = request.session['cname']
+	Cname = cname.replace('_', ' ')
+	context['Cname'] = Cname
+
+	page = int(page)
+	path = word_results[page][-1]
+	pos = positions[page]
+	nimg_path = "media/uploads/"+path+'.jpg'
+	request.session['mflag'] = 1
+	request.session['path'] = nimg_path
+	request.session['pos'] = pos
+	context['nimg'] = reverse('show_page')
+	context['ftype'] = request.session['ftype']
+	context['page'] = page
+	context['mlen'] = min(10, len(word_results))
+	context['nid'] = page+1
+	context['pid'] = page-1
+	if request.session['ftype'] == 'img':
+		context['qimg'] = reverse('show_image')
+	else:
+		context['qimg'] = request.session['qimg']
+	return render(request, page_template, context)
 
 def view_results(request, page, pid):
 	page_template = 'retrieval/view_results.html'
@@ -255,6 +332,7 @@ def view_results(request, page, pid):
 		context['qimg'] = request.session['qimg']
 	request.session['path'] = nimg_path
 	request.session['pos'] = pos
+	request.session['mflag'] = 0
 	context['nimg'] = reverse('show_page')
 	context['ftype'] = request.session['ftype']
 	context['pid'] = pid
