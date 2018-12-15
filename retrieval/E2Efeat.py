@@ -37,12 +37,11 @@ def synthesizeImage(rText):
     font_path = 'saved_models/Lohit-Malayalam.ttf'
     rText.encode('utf-8')
     rFontIdx = 0
-    fontsize = 48
-    font = ImageFont.truetype(font_path, fontsize)
+    #fontsize = 48
+    #font = ImageFont.truetype(font_path, fontsize)
+    #w, h = font.getsize(rText)
+    font = ImageFont.truetype(font_path, 32)
     w, h = font.getsize(rText)
-    if(w>384):
-        font = ImageFont.truetype(font_path, 32)
-        w, h = font.getsize(rText)
     # elif(w<64):
     #     font = ImageFont.truetype(self.font_paths[rFontIdx], 96)
     #     w, h = font.getsize(rText)
@@ -119,7 +118,7 @@ def preprocess_img(image,fontsize, transform):
     return sample['image'].unsqueeze(0), sample['roi'].unsqueeze(0)
 
 
-def txtFeat(text, pretrained_path, synthArch='roi', embedSize=2048, testAug=False):
+def txtFeat(text, pretrained_path, synthArch='spp', embedSize=2048, testAug=False):
     '''
     synthArch: roi/spp
     '''
