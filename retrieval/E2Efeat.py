@@ -58,6 +58,7 @@ def synthesizeImage(rText):
     roi = np.asarray([0.0, min(cords[1]),min(cords[0]),max(cords[1]),max(cords[0])],dtype=np.float32)
 
     sample = {'image': image, 'roi': roi}
+    cv2.imwrite('synthimg.jpg', sample['image'])
     return sample
 
 def phocVec(text):

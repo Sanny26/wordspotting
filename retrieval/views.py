@@ -34,7 +34,7 @@ def text_query(request):
 	if request.method == 'POST':
 		query = request.POST['text_query']
 		query = query.split()
-		features = txtFeat(query, model_path)
+		features = txtFeat(query, model_path, synthArch='roi')
 
 		kdtree = open(kdtree_path, 'rb')
 		page2word = open(page2word_path, 'rb')
