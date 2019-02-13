@@ -1,0 +1,126 @@
+{% load static from staticfiles %}
+{% load mytemplatetags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>HW Search</title>
+
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+
+    
+    <Font Awesome JS >
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- Sidebar Holder -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><a href="{% url 'home' %}">HW Search</a></h3>
+            </div>
+
+            <ul class="list-unstyled components">
+                
+                <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                {% for name in collections %}
+                <li>
+                    <a href="{{'#'|add:name.0 }}" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">{{name.1}}</a>
+                    <ul class="collapse list-unstyled" id="{{name.0}}">
+                        <li>
+                            <a href="{% url 'chome' name.0 %}">About</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'redirect_' name.0 0 %}">Image Search</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'redirect_' name.0 1 %}">Text Search</a>
+                        </li>
+                    </ul>
+                </li>
+                
+                {% endfor %}
+                <br>
+                <li><a href="{% url 'about_project' %}">About the project</a></li>
+            </ul>
+
+        </nav>
+
+        <!-- Page Content Holder -->
+        <div id="content">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+
+                    <button type="button" id="sidebarCollapse" class="navbar-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <div class="row justify-content-center">
+                        <h2>Handwritten Text Search</h2>
+                    </div>
+                    <div class="row justify-content-right">
+                        <img src="{% static 'icons/lab.jpg'%}" width="75" height="50">
+                        <img src="{% static 'icons/college.jpeg'%}" width="75" height="50">
+                    </div>
+                    
+                </div>
+            </nav>
+            <div id="mcontent">
+                <h4 style="color: #606060;">Motivation</h4>
+                <p style="font-size: 1.0em;">
+                    Large collections of handwritten documents containing valuable information have been digitized and preserved. However, making these collections accessible and usable should be our main objective and this task still remains a challenge for many Indian langauges.
+                    <br><br>
+                    In this application, we demonstrate systems that enables the users to search for keywords in handwritten document collections. Through this application, users will be able to access relevant information from handwritten documents for a given search term.
+                </p>
+                <div class="line"></div>
+
+                <h4 style="color: #606060;">Technical Detail</h4>
+                <p style="font-size: 1.0em;">For a given query, a wordspotting classifier is used to generate a feature vector for the query. This pretrained classifier can process both image and text queries.
+                <br>
+                For each collection, features are calculated for all the words in the collection and a k-d tree is constructed using these features. This is used during query time to retrieve relevant results. These trees are stored collection wise.
+                <br>At query time, the calculated feature vector is used to obtain nearest neighbours from the precalculated k-d tree for that collection.</p>
+                <div class="row justify-content-center">
+                <img class="img-thumbnail" src="/media/system.png" height="400" width="400">
+                </div>
+                <div id="hyperlink">
+                    <p style="font-size: 1.0em;">For more technical details, read this article by <a href="https://arxiv.org/pdf/1802.06194.pdf">clicking here.</a></p>
+                </div>
+                <div class="line"></div>
+                
+                
+            </div>
+    </div>
+
+
+
+    <!-- jQuery CDN - Slim version (=without AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!-- Popper.JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $(this).toggleClass('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
