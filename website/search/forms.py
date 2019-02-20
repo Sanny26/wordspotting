@@ -1,6 +1,6 @@
 from django import forms
 
-class ImSearchForm(forms.Form):
+class SearchForm(forms.Form):
 	imquery = forms.ImageField(label='Upload an image ', required=False, widget=forms.FileInput(
             attrs={
                 'style': 'border-color: blue;',
@@ -13,8 +13,5 @@ class ImSearchForm(forms.Form):
                 'placeholder': 'Search for something...'
             }
         ))
-
-class TxtSearchForm(forms.Form):
-	query = forms.CharField(label='Search for something')
 
 	
