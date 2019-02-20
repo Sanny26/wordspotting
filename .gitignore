@@ -103,6 +103,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-saved_models/*
-retrieval/migrations/*
-media/*
+website/static/files/*
