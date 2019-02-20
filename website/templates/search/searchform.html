@@ -1,0 +1,320 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>HW Search</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+  <!-- Custom styles for this template -->
+  <link href="{% static 'css/base.css' %}" rel="stylesheet">
+  <link href="{% static 'css/keyboard.css' %}" rel="stylesheet">
+
+  <script>
+    $(function() {
+
+        // We can attach the `fileselect` event to all file inputs on the page
+        $(document).on('change', ':file', function() {
+          var input = $(this),
+              numFiles = input.get(0).files ? input.get(0).files.length : 1,
+              label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+          input.trigger('fileselect', [numFiles, label]);
+          $("#txtquery").attr('style','display:none;');
+          $("#imgquery").attr('style','display:flex;');
+          $("#imgname").attr('placeholder',label);
+          console.log(label);
+        });  
+    });
+  </script>
+
+  <script type="text/javascript">
+    $(function() {
+  
+ // $('textarea').focus();
+  
+  var $caps = $('.capslock'),
+      $char = $('.char');
+  
+  $caps.click(function() {
+    if($caps.hasClass('on')) {
+      $('.char,.capslock').each(function() {
+        $(this).text($(this).text().toLowerCase());
+      });
+    $caps.removeClass('on');
+      
+    } else {
+      $('.char,.capslock').each(function() {
+        $(this).text($(this).text().toUpperCase());
+      });
+      $caps.addClass('on');
+    }
+  });
+  
+  $('li').click(function() {
+    var t = this;
+     $(this).addClass('touch');
+     setTimeout(function() {
+       $(t).removeClass('touch');
+     },100);
+  });
+  
+  var lastFocus,
+      selectionStart,
+      selectionEnd;
+
+  $('textarea,input').on('focus', function() {
+    $('textarea,input').removeClass('focus');
+    $(this).addClass('focus');
+  });
+  
+  $('textarea,input').on('blur', function() {
+    lastFocus = this;
+    selStart = this.selectionStart;
+    selEnd = this.selectionEnd;
+  });
+  
+  $('.char').click(function() {
+    var char = $(this).text();
+    sendChar(char);
+  });
+  
+  $('.return').click(function() {
+    sendChar('\n');
+  });
+  
+  $('.space').click(function() {
+    sendChar(' ');
+  });
+  
+  $('.backspace').click(function() {
+    backspace();
+  });
+  
+  $('.tab').click(function() {
+    tab();
+  });
+  
+  function tab() {
+    var $inputs = $('textarea,input');
+    var currIndex = parseInt($(lastFocus).attr('tabIndex'));
+    var highestIndex = -1;
+    var selected = false;
+    $inputs.each(function() {
+      var index = parseInt($(this).attr('tabIndex'));
+      if(index > highestIndex) {
+        highestIndex = index;
+      }
+      if(index === currIndex+1) {
+        $(this).focus();
+        selected = true;
+      }
+    });
+        
+    if(!selected && currIndex === highestIndex) {
+      $inputs.each(function() {
+        var index = parseInt($(this).attr('tabIndex'));
+        if(index === 1) {
+          $(this).focus();
+        }
+      });
+    }    
+  }
+  
+  function backspace() {
+     var orig = $(lastFocus).val();
+     var updated = orig.substring(0, selStart-1) + orig.substring(selEnd, orig.length);
+     $(lastFocus).val(updated);
+     selEnd = --selStart;
+     $(lastFocus).focus();
+     lastFocus.selectionStart = selStart;
+     lastFocus.selectionEnd = selEnd;
+  }
+  
+  function sendChar(char) {
+    var orig = $(lastFocus).val();
+    var updated =  orig.substring(0, selStart) + char + orig.substring(selEnd, orig.lenght);
+    $(lastFocus).val(updated);
+    selEnd=++selStart;
+    $(lastFocus).focus();
+    lastFocus.selectionStart = selStart;
+    lastFocus.selectionEnd = selEnd;
+  };
+  
+});
+
+document.getElementById("keyboard").focus();
+  </script>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#"><strong>HW Search</strong></a>
+      
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto navbar-right">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+          
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Search in collections
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="#">Collection1</a>
+              <a class="dropdown-item" href="#">Collection 2</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li>
+        </ul>
+      </div>    
+    </div>
+  </nav>
+  
+
+  <!-- Page Content -->
+  <div class="container">
+    
+    <div class="d-flex flex-row-reverse">
+      <a href="http://cvit.iiit.ac.in" style="width:50px;height: 60px;"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"></a>
+      <a href="http://cvit.iiit.ac.in" style="width:130px;height: 60px;"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"></a>
+    </div>
+  
+    <div class="search-block">
+        <h6 class="text-center">Search from a collection of Mohanlal's blog post</h6>
+        
+            <div class="col-12 col-md-12 ">
+              <form method="post" enctype="multipart/form-data" class="form" style="width:100%;"novalidate>
+                <div class="row justify-content-center align-items-center ">
+                  
+                    {% csrf_token %}
+
+                    {{ form1.non_field_errors }}
+
+                    {{ form1.source.errors }}
+                    {{ form1.source }}
+                    {{ form1.txtquery.errors }}
+                    {{ form1.imquery.errors }}
+                    <div class="col-7">
+                      
+                    <div class="input-group mb-2 mr-sm-2" id="txtquery">
+                          <h2 id="lang"></h2>
+                          {{ form1.txtquery }}
+                          <span class="input-group-append">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                          </span>                      
+                    </div>
+                    <div class="input-group mb-2 mr-sm-2" id="imgquery" style="display: none;">
+                          <input type="text" class="form-control" id="imgname" disabled="disbaled" placeholder="Image">
+                          <span class="input-group-append">
+                            <button class="btn btn-danger mr-1" id="closebtn"><i class="fas fa-window-close" ></i></button>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                          </span>                      
+                    </div>
+
+                    <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
+                        <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
+                        <label class="btn-bs-file btn btn-primary mb-2 mr-2"><i class="fas fa-image"></i>
+                          {{ form1.imquery }}
+                        </label>
+                    </div>
+
+                  </div>
+                </form>
+            </div>
+            
+            <div class="col-12">
+              <div class="row justify-content-center align-items-center ">
+            <div id="virtualkeyboard" class="panel-collapse collapse">
+              <div class="panel-body">
+                <ul class="keyboard">
+                  <li class="char">^</li>
+                  <li class="char">1</li>
+                  <li class="char">2</li>
+                  <li class="char">3</li>
+                  <li class="char">4</li>
+                  <li class="char">5</li>
+                  <li class="char">6</li>
+                  <li class="char">7</li>
+                  <li class="char">8</li>
+                  <li class="char">9</li>
+                  <li class="char">0</li>
+                  <li class="char">-</li>
+                  <li class="char">_</li>
+                  <li class="backspace last">Bksp</li>
+                  <li class="tab">Tab</li>
+                  <li class="char">q</li>
+                  <li class="char">w</li>
+                  <li class="char">e</li>
+                  <li class="char">r</li>
+                  <li class="char">t</li>
+                  <li class="char">y</li>
+                  <li class="char">u</li>
+                  <li class="char">ı</li>
+                  <li class="char">o</li>
+                  <li class="char">p</li>
+                  <li class="char">ğ</li>
+                  <li class="char">ü</li>
+
+                  <li class="capslock">c.lock</li>
+                  <li class="char">a</li>
+                  <li class="char">s</li>
+                  <li class="char">d</li>
+                  <li class="char">f</li>
+                  <li class="char">g</li>
+                  <li class="char">h</li>
+                  <li class="char">j</li>
+                  <li class="char">k</li>
+                  <li class="char">l</li>
+                  <li class="char">ş</li>  
+                  <li class="char">i</li>
+
+                  <li class="return last">return</li>
+                  <li class="char at">@</li>
+                  <li class="char">`</li>
+                  <li class="char">z</li>
+                  <li class="char">x</li>
+                  <li class="char">c</li>
+                  <li class="char">v</li>
+                  <li class="char">b</li>
+                  <li class="char">n</li>
+                  <li class="char">m</li>
+                  <li class="char">ö</li>
+                  <li class="char">ç</li>
+                  <li class="char">?</li>
+                  <li class="char">_</li>
+                  <li class="char">=</li>
+                  <li class="char">|</li> 
+                  <li class="space"><span class="glyphicon glyphicon-resize-horizontal"></span></li>
+                </ul>
+              </div>
+            </div>
+              </div>
+            </div>
+                    
+                <!-- sanal klavye bitti -->
+    </div> 
+      
+  </div>
+</body>
+
+</html>

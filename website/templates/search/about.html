@@ -93,7 +93,7 @@
                 For each collection, features are calculated for all the words in the collection and a k-d tree is constructed using these features. This is used during query time to retrieve relevant results. These trees are stored collection wise.
                 <br>At query time, the calculated feature vector is used to obtain nearest neighbours from the precalculated k-d tree for that collection.</p>
                 <div class="row justify-content-center">
-                <img class="img-thumbnail" src="/media/system.png" height="400" width="400">
+                <img class="img-thumbnail" src="{% static 'images/system.png'%}" height="400" width="400">
                 </div>
                 <div id="hyperlink">
                     <p style="font-size: 1.0em;">For more technical details, read this article by <a href="https://arxiv.org/pdf/1802.06194.pdf">clicking here.</a></p>
