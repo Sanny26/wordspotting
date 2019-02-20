@@ -1,0 +1,276 @@
+{% load static from staticfiles %}
+{% load mytemplatetags %}
+<!DOCTYPE html>
+<html>
+<!--http://www.greywyvern.com/code/javascript/keyboard-->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>HW Search</title>
+
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+    
+
+     <!-- jQuery CDN - Slim version (=without AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!-- Popper.JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <Font Awesome JS >
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <!--script src="{% static 'js/keyboard.js' %}" charset="UTF-8"></script-->
+
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
+    <script>
+      $(function() {
+
+          // We can attach the `fileselect` event to all file inputs on the page
+          $(document).on('change', ':file', function() {
+            var input = $(this),
+                numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+            input.trigger('fileselect', [numFiles, label]);
+            $("#txtquery").attr('style','display:none;');
+            $("#imgquery").attr('style','display:flex;');
+            $("#imgname").attr('placeholder',label);
+            console.log(label);
+          });
+
+          $("#closebtn").click(function(){
+              location.reload();
+          }); 
+      });
+    </script>
+
+    <script type="text/javascript">
+      $(function() {
+    
+        // $('textarea').focus();
+        
+        var $caps = $('.capslock'),
+            $char = $('.char');
+        
+        $caps.click(function() {
+          if($caps.hasClass('on')) {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toLowerCase());
+            });
+          $caps.removeClass('on');
+            
+          } else {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toUpperCase());
+            });
+            $caps.addClass('on');
+          }
+        });
+        
+        $('li').click(function() {
+          var t = this;
+           $(this).addClass('touch');
+           setTimeout(function() {
+             $(t).removeClass('touch');
+           },100);
+        });
+        
+        var lastFocus,
+            selectionStart,
+            selectionEnd;
+
+        $('textarea,input').on('focus', function() {
+          $('textarea,input').removeClass('focus');
+          $(this).addClass('focus');
+        });
+        
+        $('textarea,input').on('blur', function() {
+          lastFocus = this;
+          selStart = this.selectionStart;
+          selEnd = this.selectionEnd;
+        });
+        
+        $('.char').click(function() {
+          var char = $(this).text();
+          sendChar(char);
+        });
+        
+        $('.return').click(function() {
+          sendChar('\n');
+        });
+        
+        $('.space').click(function() {
+          sendChar(' ');
+        });
+        
+        $('.backspace').click(function() {
+          backspace();
+        });
+        
+        $('.tab').click(function() {
+          tab();
+        });
+        
+        function tab() {
+          var $inputs = $('textarea,input');
+          var currIndex = parseInt($(lastFocus).attr('tabIndex'));
+          var highestIndex = -1;
+          var selected = false;
+          $inputs.each(function() {
+            var index = parseInt($(this).attr('tabIndex'));
+            if(index > highestIndex) {
+              highestIndex = index;
+            }
+            if(index === currIndex+1) {
+              $(this).focus();
+              selected = true;
+            }
+          });
+              
+          if(!selected && currIndex === highestIndex) {
+            $inputs.each(function() {
+              var index = parseInt($(this).attr('tabIndex'));
+              if(index === 1) {
+                $(this).focus();
+              }
+            });
+          }    
+        }
+        
+        function backspace() {
+           var orig = $(lastFocus).val();
+           var updated = orig.substring(0, selStart-1) + orig.substring(selEnd, orig.length);
+           $(lastFocus).val(updated);
+           selEnd = --selStart;
+           $(lastFocus).focus();
+           lastFocus.selectionStart = selStart;
+           lastFocus.selectionEnd = selEnd;
+        }
+        
+        function sendChar(char) {
+          var orig = $(lastFocus).val();
+          var updated =  orig.substring(0, selStart) + char + orig.substring(selEnd, orig.lenght);
+          $(lastFocus).val(updated);
+          selEnd=++selStart;
+          $(lastFocus).focus();
+          lastFocus.selectionStart = selStart;
+          lastFocus.selectionEnd = selEnd;
+        };
+        
+      });
+
+      document.getElementById("keyboard").focus();
+    </script>
+
+    
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-fixed-top">
+    <a class="navbar-brand" href="{% url 'home' %}">Handwritten Text Search</a>
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Other Collections
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          {% for name in collections %}
+              <a class="dropdown-item" href="{% url 'search' name.0 %}">{{name.1}}</a>
+          {% endfor %}
+          </div>  
+        </li>
+      </ul>
+    </div>
+    <a href="http://cvit.iiit.ac.in" style="width:70px;height: 50px;"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"></a>
+    <a href="http://iiit.ac.in" style="width:100px;height: 50px;"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"></a>
+  </nav>
+              
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="search-block">
+          <h6 class="text-center">Search from a collection of Mohanlal's blog post</h6>
+          <form method="post" enctype="multipart/form-data" class="form" style="width:100%;"novalidate>
+            <div class="row justify-content-center align-items-center ">
+              
+                {% csrf_token %}
+
+                {{ form1.non_field_errors }}
+
+                {{ form1.source.errors }}
+                {{ form1.source }}
+                {{ form1.txtquery.errors }}
+                {{ form1.imquery.errors }}
+                <div class="col-7">
+                  
+                <div class="input-group mb-2 mr-sm-2" id="txtquery">
+                      <h2 id="lang"></h2>
+                      {{ form1.txtquery }}
+                      <span class="input-group-append">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                      </span>                      
+                </div>
+                <div class="input-group mb-2 mr-sm-2" id="imgquery" style="display: none;">
+                      <input type="text" class="form-control" id="imgname" disabled="disbaled" placeholder="Image">
+                      <span class="input-group-append">
+                        <a class="btn btn-danger mr-1" id="closebtn"><i class="fas fa-window-close" style="color:white;"></i></a>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                      </span>                      
+                </div>
+                <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
+                    <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
+                    <label class="btn-bs-file btn btn-primary mb-2 mr-2"><i class="fas fa-image"></i>
+                      {{ form1.imquery }}
+                    </label>
+                </div>
+
+              </div>
+            </form>
+        </div>
+            
+        <div class="col-md-10 col-lg-10 col-sm-12">
+          <div class="row justify-content-center align-items-center ">
+            <div id="virtualkeyboard" class="panel-collapse collapse">
+              <div class="panel-body">
+                <ul class="keyboard">
+
+
+                  {% include 'search/keyboard_ml.html' %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>       
+    </div>
+
+    
+  </div>
+
+   
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $(this).toggleClass('active');
+            });
+        });
+    </script>
+</body>
+</html>
