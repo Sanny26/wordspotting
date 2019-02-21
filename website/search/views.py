@@ -64,6 +64,7 @@ def query(request, cname):
 	context = {}
 	context['desc'] = collection.desc
 	context['url'] = collection.collection_link
+	context['lang'] = collection.language
 	context['demo_imgs'] = os.listdir(settings.STATIC_PATH +"/files/"+cname+"/imgs/")
 	context['cname'] = cname
 	context['Cname'] = Cname
@@ -131,7 +132,7 @@ def search_img(query, cname):
 		positions = r['positions']
 	else:
 		return False
-
+	print(results)
 	return results, positions
 
 def show_image(request):
@@ -160,6 +161,27 @@ def show_page(request):
 	nimg.save(response, "PNG")
 	print('Time to render total page', time.time()-begin)
 	return response
+
+def show_line(request, pid):
+	results = request.session['results']
+	cname = request.session['cname']
+	positions = request.session['positions']
+	path = results[int(pid)]
+	if cname=="Mohanlal_writings":
+		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
+	else:
+		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
+	nimg = cv2.imread(path)
+	print(path)
+	y1, y2, x1, x2 = positions[int(pid)]
+	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
+	nimg = nimg[max(0, y1-30):y2+30, :]
+
+	nimg = Image.fromarray(nimg)
+	response = HttpResponse(content_type="image/png")
+	nimg.save(response, "PNG")
+	return response
+
 
 def demo_results(request, img):
 	cname = request.session['cname']
@@ -193,6 +215,7 @@ def results(request):
 	context['Cname'] = Cname
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	context['word_path'] = collection.words_path
+	context['lang'] = collection.language
 	
 
 	if request.method == 'POST':
@@ -230,6 +253,72 @@ def results(request):
 		pages.append([each.split('/')[0]+'.jpg', each, i])
 
 	paginator = Paginator(pages, 6)
+
+	display_page = request.GET.get('page')
+	pages = paginator.get_page(display_page)
+
+	context['pages'] = pages
+	if request.session['ftype'] == 'img':
+		context['qimg'] = reverse('show_image')
+	else:
+		context['qimg'] = request.session['qimg']
+	context['cname'] = cname
+	context['ftype'] = request.session['ftype']
+	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
+	return render(request, page_template, context)
+
+def line_results(request):
+	page_template = 'search/line_results.html'
+	
+	results = request.session['results']
+	cname = request.session['cname']
+	positions = request.session['positions']
+	context = {}
+	pages = []
+	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	context['Cname'] = Cname
+	collection = Collection.objects.filter(collection_name = Cname)[0]
+	context['word_path'] = collection.words_path
+	context['lang'] = collection.language
+	
+
+	if request.method == 'POST':
+		form1 = SearchForm(request.POST, request.FILES)
+		if form1.is_valid():
+			if 'imquery' in request.FILES:
+				fobj = request.FILES['imquery']
+				jpeg_array = bytearray(fobj.read())
+				img = cv2.imdecode(np.asarray(jpeg_array), 1)
+				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+				results, positions = search_img(jpeg_array, cname)
+				request.session['results'] = results[0]
+				request.session['positions'] = positions
+				request.session['cname'] = cname
+				request.session['ftype'] = 'img'
+				request.session['qimg'] = img.tolist()
+				return redirect('results')
+			elif form1.cleaned_data['txtquery']:
+				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
+				request.session['results'] = results[0]
+				request.session['positions'] = positions
+				request.session['cname'] = cname
+				request.session['ftype'] = 'txt'
+				request.session['qimg'] = form1.cleaned_data['txtquery']
+				return redirect('results')
+
+		else:
+			print(form1.errors)
+
+	form1 = SearchForm()
+	context['form1'] = form1
+		
+	print(results)
+	for i, each in enumerate(results):
+		pages.append([each.split('/')[0]+'.jpg', each, i])
+
+	paginator = Paginator(pages, 3)
 
 	display_page = request.GET.get('page')
 	pages = paginator.get_page(display_page)
@@ -287,6 +376,8 @@ def view_results(request, page, pid):
 	request.session['cname'] = cname
 	Cname = cname.replace('_', ' ')
 	context['Cname'] = Cname
+	collection = Collection.objects.filter(collection_name = Cname)[0]
+	context['lang'] = collection.language
 	if request.method == 'POST':
 		form1 = SearchForm(request.POST, request.FILES)
 		if form1.is_valid():
@@ -318,14 +409,14 @@ def view_results(request, page, pid):
 	context['form1'] = form1
 
 	if page!=0:
-		pid = (page-1)*6 + pid
+		pid = (page-1)*3 + pid
 	path = results[pid]
 	pos = positions[pid]
-	print(path)
 	if cname=="Mohanlal_writings":
 		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
 	else:
 		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
+	print('!!!view!!! ', path)
 	
 	if request.session['ftype'] == 'img':
 		context['qimg'] = reverse('show_image')

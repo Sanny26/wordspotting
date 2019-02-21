@@ -377,3 +377,8 @@ body{background-color:#f1f1f2}
 .figure-caption :hover{
     color:blue;
 }
+
+.figure1  img:hover{
+    border:5px outset #021a40;
+    cursor: pointer;
+}

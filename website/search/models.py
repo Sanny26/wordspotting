@@ -7,10 +7,7 @@ class Collection(models.Model):
 	collection_name = models.CharField(max_length=200)
 	collection_link = models.URLField(blank=True)
 	desc = models.TextField(blank=True)
-	weights_path = models.CharField(max_length=200, blank='True')
-	kdtree_path = models.CharField(max_length=200, blank='True')
-	page2word_path = models.CharField(max_length=200, blank='True')
-	wrd_pos_fpath = models.CharField(max_length=200, blank='True')
+	language = models.CharField(max_length=200, blank='True')
 	words_path = models.CharField(max_length=200, blank='True')
 	demo_path = models.CharField(max_length=200, blank='True')
 
