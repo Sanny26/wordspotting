@@ -7,9 +7,11 @@ register = template.Library()
 @register.filter(name='file_exists')
 def file_exists(filepath):
     path = os.path.join(settings.BASE_DIR, filepath) + '.jpg'
-    print('!!!!!!', settings.BASE_DIR, path)
     if os.path.isfile(path):
-        print(path)
         return '/'+filepath + '.jpg'
     else:
         return "http://placehold.it/150x150?text=Collection"
+
+@register.filter(name='split_name')
+def split_name(name):
+	return name.split('.')[0]

@@ -3,14 +3,13 @@
 <!DOCTYPE html>
 <html>
 <!--http://www.greywyvern.com/code/javascript/keyboard-->
+<!--https://www.vishalon.net/pramukhime/javascript-library-->
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>HW Search</title>
-
-    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
     
@@ -26,9 +25,12 @@
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
     <!--script src="{% static 'js/keyboard.js' %}" charset="UTF-8"></script-->
+    <script type="text/javascript" src="{% static '/js/pramukhime.js' %}"></script>
+    <script type="text/javascript" src="{% static '/js/pramukhindic.js' %}"></script>
 
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
     <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
+    
     <script>
       $(function() {
 
@@ -206,7 +208,7 @@
     <div class="row">
       <div class="col-md-12 col-lg-12 col-sm-12">
         <div class="search-block">
-          <h6 class="text-center">Search from a collection of Mohanlal's blog post</h6>
+          <h6 class="text-center">Search from a collection of {{Cname}}</h6>
           <form method="post" enctype="multipart/form-data" class="form" style="width:100%;"novalidate>
             <div class="row justify-content-center align-items-center ">
               
@@ -219,28 +221,31 @@
                 {{ form1.txtquery.errors }}
                 {{ form1.imquery.errors }}
                 <div class="col-7">
-                  
-                <div class="input-group mb-2 mr-sm-2" id="txtquery">
-                      <h2 id="lang"></h2>
-                      {{ form1.txtquery }}
-                      <span class="input-group-append">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                      </span>                      
+                    <div class="input-group mb-2 mr-sm-2" id="txtquery">
+                          <h2 id="lang"></h2>
+                          {{ form1.txtquery }}
+                          <span class="input-group-append">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                          </span>                      
+                    </div>
+                    <div class="input-group mb-2 mr-sm-2" id="imgquery" style="display: none;">
+                          <input type="text" class="form-control" id="imgname" disabled="disbaled" placeholder="Image">
+                          <span class="input-group-append">
+                            <a class="btn btn-danger mr-1" id="closebtn"><i class="fas fa-window-close" style="color:white;"></i></a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                          </span>                      
+                    </div>
+                    <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
+                        <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
+                        <label class="btn-bs-file btn btn-primary mb-2 mr-2"><i class="fas fa-image"></i>
+                          {{ form1.imquery }}
+                          <script language="javascript" type="text/javascript">
+                            pramukhIME.addLanguage(PramukhIndic,"sanskrit"); 
+                            pramukhIME.enable();
+                        </script>
+                        </label>
+                    </div>
                 </div>
-                <div class="input-group mb-2 mr-sm-2" id="imgquery" style="display: none;">
-                      <input type="text" class="form-control" id="imgname" disabled="disbaled" placeholder="Image">
-                      <span class="input-group-append">
-                        <a class="btn btn-danger mr-1" id="closebtn"><i class="fas fa-window-close" style="color:white;"></i></a>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                      </span>                      
-                </div>
-                <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
-                    <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
-                    <label class="btn-bs-file btn btn-primary mb-2 mr-2"><i class="fas fa-image"></i>
-                      {{ form1.imquery }}
-                    </label>
-                </div>
-
               </div>
             </form>
         </div>
@@ -250,9 +255,11 @@
             <div id="virtualkeyboard" class="panel-collapse collapse">
               <div class="panel-body">
                 <ul class="keyboard">
-
-
-                  {% include 'search/keyboard_ml.html' %}
+                  {% if cname == 'Mohanlal_writings' %}
+                    {% include 'search/keyboard_ml.html' %}
+                  {% else %}
+                     {% include 'search/keyboard_en.html' %}
+                  {% endif %}
                 </ul>
               </div>
             </div>
@@ -260,19 +267,39 @@
         </div>
       </div>       
     </div>
-
-    
+    <div class="row justify-content-center">
+      <div class="col-7">
+        <div class="row justify-content-center">
+          <a href="{% url 'chome' cname %}" class="text-primary">What is this collection ??</a>
+        </div>
+        <!--div class="col-md-6 col-lg-6 col-sm-6 col-xs-12">
+          <div class="card">
+            <div class="card-body">
+              {{desc}}
+              <br><br>
+              Link to the blog: <a href="{{url}}">{{url}}</a>
+            </div>
+          </div>
+        </div-->
+      </div>
+    </div>
+    <div class="line"></div>
+    <div class="row justify-content-center">
+      <div class="d-block row justify-content-center">
+        <div class="col-12">
+          <div class="row justify-content-center">
+            <div class="card">
+              <div class="card-body">
+                <p>Start searching by clicking on one of the below words.</p>
+                {% for img in demo_imgs %}
+                    <a href="{% url 'dresults' img|split_name %}"><img src="{{'/static/files/'|add:cname|add:'/imgs/'|add:img}}" width="100" height="50" style="border: 1px solid #999">
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
-   
-
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('#sidebarCollapse').on('click', function () {
-                $('#sidebar').toggleClass('active');
-                $(this).toggleClass('active');
-            });
-        });
-    </script>
 </body>
 </html>

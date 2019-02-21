@@ -2,19 +2,18 @@
 {% load mytemplatetags %}
 <!DOCTYPE html>
 <html>
-
+<!--http://www.greywyvern.com/code/javascript/keyboard-->
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>HW Search</title>
-
-    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+    
 
-    <!-- jQuery CDN - Slim version (=without AJAX) -->
+     <!-- jQuery CDN - Slim version (=without AJAX) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <!-- Popper.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
@@ -24,142 +23,220 @@
     <Font Awesome JS >
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <!--script src="{% static 'js/keyboard.js' %}" charset="UTF-8"></script-->
 
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
     <script>
-    $(document).ready(function(){
-      $('[data-toggle="tooltip"]').tooltip();   
-    });
+      $(function() {
+
+          // We can attach the `fileselect` event to all file inputs on the page
+          $(document).on('change', ':file', function() {
+            var input = $(this),
+                numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+            input.trigger('fileselect', [numFiles, label]);
+            $("#txtquery").attr('style','display:none;');
+            $("#imgquery").attr('style','display:flex;');
+            $("#imgname").attr('placeholder',label);
+            console.log(label);
+          });
+
+          $("#closebtn").click(function(){
+              location.reload();
+          }); 
+      });
     </script>
-   
+
+    <script type="text/javascript">
+      $(function() {
+    
+        // $('textarea').focus();
+        
+        var $caps = $('.capslock'),
+            $char = $('.char');
+        
+        $caps.click(function() {
+          if($caps.hasClass('on')) {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toLowerCase());
+            });
+          $caps.removeClass('on');
+            
+          } else {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toUpperCase());
+            });
+            $caps.addClass('on');
+          }
+        });
+        
+        $('li').click(function() {
+          var t = this;
+           $(this).addClass('touch');
+           setTimeout(function() {
+             $(t).removeClass('touch');
+           },100);
+        });
+        
+        var lastFocus,
+            selectionStart,
+            selectionEnd;
+
+        $('textarea,input').on('focus', function() {
+          $('textarea,input').removeClass('focus');
+          $(this).addClass('focus');
+        });
+        
+        $('textarea,input').on('blur', function() {
+          lastFocus = this;
+          selStart = this.selectionStart;
+          selEnd = this.selectionEnd;
+        });
+        
+        $('.char').click(function() {
+          var char = $(this).text();
+          sendChar(char);
+        });
+        
+        $('.return').click(function() {
+          sendChar('\n');
+        });
+        
+        $('.space').click(function() {
+          sendChar(' ');
+        });
+        
+        $('.backspace').click(function() {
+          backspace();
+        });
+        
+        $('.tab').click(function() {
+          tab();
+        });
+        
+        function tab() {
+          var $inputs = $('textarea,input');
+          var currIndex = parseInt($(lastFocus).attr('tabIndex'));
+          var highestIndex = -1;
+          var selected = false;
+          $inputs.each(function() {
+            var index = parseInt($(this).attr('tabIndex'));
+            if(index > highestIndex) {
+              highestIndex = index;
+            }
+            if(index === currIndex+1) {
+              $(this).focus();
+              selected = true;
+            }
+          });
+              
+          if(!selected && currIndex === highestIndex) {
+            $inputs.each(function() {
+              var index = parseInt($(this).attr('tabIndex'));
+              if(index === 1) {
+                $(this).focus();
+              }
+            });
+          }    
+        }
+        
+        function backspace() {
+           var orig = $(lastFocus).val();
+           var updated = orig.substring(0, selStart-1) + orig.substring(selEnd, orig.length);
+           $(lastFocus).val(updated);
+           selEnd = --selStart;
+           $(lastFocus).focus();
+           lastFocus.selectionStart = selStart;
+           lastFocus.selectionEnd = selEnd;
+        }
+        
+        function sendChar(char) {
+          var orig = $(lastFocus).val();
+          var updated =  orig.substring(0, selStart) + char + orig.substring(selEnd, orig.lenght);
+          $(lastFocus).val(updated);
+          selEnd=++selStart;
+          $(lastFocus).focus();
+          lastFocus.selectionStart = selStart;
+          lastFocus.selectionEnd = selEnd;
+        };
+        
+      });
+
+      document.getElementById("keyboard").focus();
+    </script>
+
+    
 </head>
 
 <body>
-      <div class="wrapper">
-        <!-- Sidebar Holder -->
-        <nav id="sidebar">
-            <div class="sidebar-header">
-                <h3><a href="{% url 'home' %}">HW Search</a></h3>
-            </div>
 
-            <ul class="list-unstyled components">
-                <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
-                {% for name in collections %}
-                <li>
-                    <a href="{{'#'|add:name.0 }}" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">{{name.1}}</a>
-                    <ul class="{% if name.0 != cname %}collapse{% endif %} list-unstyled" id="{{name.0}}">
-                        <li class="{% if name.0 == cname %}active{% endif %}">
-                            <a href="{% url 'chome' name.0 %}">About</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'redirect_' name.0 0 %}">Image Search</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'redirect_' name.0 1 %}">Text Search</a>
-                        </li>
-                    </ul>
-                </li>
-                {% endfor %}
-                <br>
-                <li><a href="{% url 'about_project' %}">About the project</a></li>
-            </ul>
-        </nav>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-fixed-top">
 
-        <!-- Page Content Holder -->
-        <div id="content">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'home' %}">Handwritten Text Search</a>
 
-                    <button type="button" id="sidebarCollapse" class="navbar-btn">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-                    <div class="row justify-content-center">
-                        <h2>Handwritten Text Search</h2>
-                    </div>
-                    <div class="row justify-content-right">
-                        <img src="{% static 'icons/lab.jpg'%}" width="75" height="50">
-                        <img src="{% static 'icons/college.jpeg'%}" width="75" height="50">
-                    </div>
-                </div>
-            </nav>
-              
-            <div id="mcontent">  
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Other Collections
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          {% for name in collections %}
+              <a class="dropdown-item" href="{% url 'search' name.0 %}">{{name.1}}</a>
+          {% endfor %}
+          </div>  
+        </li>
+      </ul>
+    </div>
+    <a href="http://cvit.iiit.ac.in" style="width:70px;height: 50px;"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"></a>
+    <a href="http://iiit.ac.in" style="width:100px;height: 50px;"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"></a>
+
+    </nav>
+
+    <div class="container">  
                
-                <div id="hyperlink">
-                    <div class="card">
-                      
-                      <div class="card-body">
-                      
-                      
-                        <img src="{{'media/placeholders/'|add:cname|file_exists}}" style="margin:1px 15px 1px 1px;padding:1px;border:1px solid #021a40;float:left;" height="150" width="150">
-                        <h4  style="color: #606060;text-align: justify-all;">{{Cname}}</h4>
-                        <p style="text-align: justify-all;">
-                            {% if desc %}
-                            {{desc | safe}}<br>
-                            {% else %}
-                            No information available about this collection.<br>
-                            {% endif %}
-                            {% if url %}
-                            <a href="{{url}}">Click here to know more about the collection.</a> 
-                            {% endif %}
-                            </p>
-                      </div>
-                    </div>
-                </div>  
-                <div class="space"></div>
-                    <!--Access demo links-->
-                <div class="card">
-                    
-                    <div class="card-body">
-                      <p>Search systems can process both images and text queries.<br><span class="text-danger">Select one of the search engines below.</span></p>
-
-                      <div class="row text-center">
-                        <div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                          <a href="{% url 'upload_query' %}" data-toggle="tooltip" title="Searches for relevant documents that contains the given word image.">
-                          <div class="box-part text-center">
-                                <i class="fas fa-image fa-4x" aria-hidden="true" style="color:#fff;"></i>
-                                <div class="text">
-                                    <h4>Image Search</h4>
-                                </div>
-                          </div></a>
-                        </div> 
-                        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                          <a href="{% url 'text_query' %}" data-toggle="tooltip" title="Searches for relevant documents that contains the given text query.">
-                          <div class="box-part text-center">
-                              <i class="fas fa-keyboard fa-4x" style="color:#fff;"></i>
-                              <div class="text">
-                                  <h4>Text Search</h4>
-                              </div>
-                          </div></a>
-                        </div> 
-                      </div>
-                    </div>
-                </div>
-                    <!--h4>Sample pages</h4-->
-                <div class="space"></div>
-                <div class="card">
-                    
-                    <div class="card-body">
-                      <p>The sample pages from this collection are displayed below.</p>
-                      <a type="button" class="btn" ><img class="simg" src="{{'media/sample_pages/'|add:cname|add:'/1'|file_exists}}"></a>
-                      <a type="button" class="btn" ><img class="simg" src="{{'media/sample_pages/'|add:cname|add:'/2'|file_exists}}"></a>
-                    </div>
-                </div>
-                    
-                
+        <div id="hyperlink">
+            <div class="card">
+              <div class="card-body">
+                <img src="{{'static/placeholders/'|add:cname|file_exists}}" style="margin:1px 15px 1px 1px;padding:1px;border:1px solid #021a40;float:left;" height="150" width="150">
+                <h4  style="color: #606060;text-align: justify-all;">{{Cname}}</h4>
+                <p style="text-align: justify-all;">
+                    {% if desc %}
+                    {{desc | safe}}<br>
+                    {% else %}
+                    No information available about this collection.<br>
+                    {% endif %}
+                    {% if url %}
+                    This documents of this collection have been selected from
+                    <a href="{{url}}"> this original website <i class="fas fa-external-link-alt"></i></a> 
+                    {% endif %}
+                    </p>
+              </div>
             </div>
         </div>
+        <br>
+        <div class="row">
+        <p class="ml-5 text-primary"><a href="{% url 'search' cname %}"> Try searching in this collection <i class="fas fa-external-link-alt"></i></a></p>
+        </div>
+                   
+        <div class="card">
+            <div class="card-body">
+              <p>The sample pages from this collection are displayed below.</p>
+              <a type="button" class="btn" ><img class="simg" src="{{'static/sample_pages/'|add:cname|add:'/1'|file_exists}}"></a>
+              <a type="button" class="btn" ><img class="simg" src="{{'static/sample_pages/'|add:cname|add:'/2'|file_exists}}"></a>
+            </div>
+        </div>
+                    
+                
     </div>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('#sidebarCollapse').on('click', function () {
-                $('#sidebar').toggleClass('active');
-                $(this).toggleClass('active');
-            });
-        });
-    </script>
+    
 </body>
 
 </html>
