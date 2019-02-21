@@ -29,8 +29,7 @@
     <script type="text/javascript" src="{% static '/js/pramukhindic.js' %}"></script>
 
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
-    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
-    
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">   
     <script>
       $(function() {
 
@@ -49,6 +48,8 @@
           $("#closebtn").click(function(){
               location.reload();
           }); 
+
+          $('[data-toggle="tooltip"]').tooltip();
       });
     </script>
 
@@ -167,14 +168,13 @@
         
       });
 
-      document.getElementById("keyboard").focus();
+      document.getElementById("id_txtquery").focus();
     </script>
 
     
 </head>
 
 <body>
-
   <nav class="navbar navbar-expand-lg navbar-dark navbar-fixed-top">
     
     <a class="navbar-brand" href="{% url 'home' %}">Handwritten Text Search</a>
@@ -237,12 +237,12 @@
                     </div>
                     <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
                         <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
-                        <label class="btn-bs-file btn btn-primary mb-2 mr-2"><i class="fas fa-image"></i>
+                        <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" title="Search by example query image."><i class="fas fa-image"></i>
                           {{ form1.imquery }}
                           <script language="javascript" type="text/javascript">
-                            pramukhIME.addLanguage(PramukhIndic,"sanskrit"); 
-                            pramukhIME.enable();
-                        </script>
+                              pramukhIME.addKeyboard(PramukhIndic,"{{lang}}"); 
+                              pramukhIME.enable();
+                          </script>
                         </label>
                     </div>
                 </div>
@@ -270,20 +270,11 @@
     <div class="row justify-content-center">
       <div class="col-7">
         <div class="row justify-content-center">
-          <a href="{% url 'chome' cname %}" class="text-primary">What is this collection ??</a>
+          <a href="{% url 'chome' cname %}" class="text-primary">What is this collection? <i class="fas fa-external-link-alt"></i></a>
         </div>
-        <!--div class="col-md-6 col-lg-6 col-sm-6 col-xs-12">
-          <div class="card">
-            <div class="card-body">
-              {{desc}}
-              <br><br>
-              Link to the blog: <a href="{{url}}">{{url}}</a>
-            </div>
-          </div>
-        </div-->
       </div>
     </div>
-    <div class="line"></div>
+    <br><br>
     <div class="row justify-content-center">
       <div class="d-block row justify-content-center">
         <div class="col-12">

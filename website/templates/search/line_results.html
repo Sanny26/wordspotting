@@ -155,22 +155,22 @@
 			<p class="text-center">Search results for <strong>{{qimg}}</strong></p>
 			{% endif %}
 		</div>
-        <br>
         <div id="hyperlin" class="row justify-content-center">
             {% for each in pages %}
-            <div class="col-lg-4 col-md-4 col-xs-6">
+            <div class="col-12">
                 <div class="mb-4 text-center">
-                    <figure class="figure" data-toggle="tooltip" title="Click to open.">
-                        <a href="{% url 'view_results' pages.number forloop.counter0 %}" >
-                        <img src="{{word_path|add:'/'|add:each.1}}" style="padding:1px;border:1px solid #021a40;" height="70" width="150">
+                    <figure class="figure1" >
+                      <figcaption class="ml-50 figure-caption"><p><a href="{% url 'view_results' pages.number forloop.counter0 %}">Result {{each.2|add:"1"}} : Document <i class="fas fa-link"></i></a></p></figcaption>
+                        <a href="{% url 'view_results' pages.number forloop.counter0 %}" data-toggle="tooltip" title="Click to open." >
+                        <img src="{% url 'show_line' each.2 %}" style="padding:1px;border:1px solid #021a40;" width="900">
                         </a>
-                    <figcaption class="figure-caption"><p><a href="{% url 'view_results' pages.number forloop.counter0 %}">Result {{each.2|add:"1"}} : Open document <i class="fas fa-link"></i></a></p></figcaption>
+                    
                     </figure>
                 </div>
             </div>
             {% endfor %}
         </div>
-
+        <br>
         <div class="row justify-content-center">
             <div class="pagination" id="hyperlink">
                 <span class="step-links">
