@@ -35,18 +35,7 @@
                 <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
                 {% for name in collections %}
                 <li>
-                    <a href="{{'#'|add:name.0 }}" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">{{name.1}}</a>
-                    <ul class="collapse list-unstyled" id="{{name.0}}">
-                        <li>
-                            <a href="{% url 'chome' name.0 %}">About</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'redirect_' name.0 0 %}">Image Search</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'redirect_' name.0 1 %}">Text Search</a>
-                        </li>
-                    </ul>
+                    <a href="{% url 'search' name.0 %}">{{name.1}}</a>
                 </li>
                 
                 {% endfor %}
