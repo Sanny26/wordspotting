@@ -62,6 +62,12 @@ def query(request, cname):
 	Cname = cname.replace('_', ' ')
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	context = {}
+	context['desc'] = collection.desc
+	context['url'] = collection.collection_link
+	context['demo_imgs'] = os.listdir(settings.STATIC_PATH +"/files/"+cname+"/imgs/")
+	context['cname'] = cname
+	context['Cname'] = Cname
+	
 	if request.method == 'POST':
 		form1 = SearchForm(request.POST, request.FILES)
 		if form1.is_valid():
@@ -70,7 +76,7 @@ def query(request, cname):
 				jpeg_array = bytearray(fobj.read())
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
 				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array)
+				results, positions = search_img(jpeg_array, cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -78,7 +84,7 @@ def query(request, cname):
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'])
+				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -96,8 +102,11 @@ def query(request, cname):
 	return render(request, page_template, context)
 
 
-def search_txt(query):
-	API_URL = 'http://localhost:9000/predict'
+def search_txt(query, cname):
+	if cname=="Mohanlal_writings":
+		API_URL = 'http://localhost:5000/predict' 
+	else:
+		API_URL = 'http://localhost:9700/predict'
 	payload = {'text': query}
 	r = requests.post(API_URL, data=json.dumps(payload)).json()
 	if r['success']:
@@ -108,8 +117,11 @@ def search_txt(query):
 
 	return results, positions
 
-def search_img(query):
-	API_URL = 'http://localhost:9000/predict'
+def search_img(query, cname):
+	if cname=="Mohanlal_writings":
+		API_URL = 'http://localhost:5000/predict' 
+	else:
+		API_URL = 'http://localhost:9700/predict'
 	payload = {'image': query}
 	print('sent query')
 	r = requests.post(API_URL, files=payload).json()
@@ -149,39 +161,23 @@ def show_page(request):
 	print('Time to render total page', time.time()-begin)
 	return response
 
-def demo_results(request, im_id):
+def demo_results(request, img):
 	cname = request.session['cname']
 	Cname = cname.replace('_', ' ')
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	demo_path = collection.demo_path
-	model_path = collection.weights_path
-	kdtree_path = collection.kdtree_path
-	page2word_path = collection.page2word_path
-	wrd_pos_fpath = collection.wrd_pos_fpath
-
-	paths = [demo_path+'/'+file for file in os.listdir(demo_path)]
-	paths.sort()
-	img_path = paths[int(im_id)-1]
-	print(img_path)
-	img = cv2.imread(img_path, 0)
-	img_feat = imgFeat(img, model_path)
-	kdtree = open(kdtree_path, 'rb')
-	page2word = open(page2word_path, 'rb')
-	with open(wrd_pos_fpath, 'rb') as fobj:
-		wrd_pos = pickle.load(fobj)
-	
-	begin = time.time()
-	results = query_word(img_feat, kdtree, page2word) 
-	
-	request.session['qimg'] = img.tolist()
-
-	positions = []
-	for each in results[0]:
-		pos = [int(pos) for pos in wrd_pos[each]]
-		positions.append(pos)
+	img_path =  settings.STATIC_PATH + demo_path +'/'+ img + '.jpg'
+	fb = open(img_path, 'rb')
+	f = fb.read()
+	b = bytearray(f)
+	img = cv2.imdecode(np.asarray(b), 1)
+	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	results, positions = search_img(b, cname)
 	request.session['results'] = results[0]
 	request.session['positions'] = positions
+	request.session['cname'] = cname
 	request.session['ftype'] = 'img'
+	request.session['qimg'] = img.tolist()
 	return redirect('results')
 
 def results(request):
@@ -207,7 +203,7 @@ def results(request):
 				jpeg_array = bytearray(fobj.read())
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
 				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array)
+				results, positions = search_img(jpeg_array, cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -215,7 +211,7 @@ def results(request):
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'])
+				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -299,7 +295,7 @@ def view_results(request, page, pid):
 				jpeg_array = bytearray(fobj.read())
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
 				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array)
+				results, positions = search_img(jpeg_array, cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -307,7 +303,7 @@ def view_results(request, page, pid):
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'])
+				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
 				request.session['results'] = results[0]
 				request.session['positions'] = positions
 				request.session['cname'] = cname
@@ -325,7 +321,11 @@ def view_results(request, page, pid):
 		pid = (page-1)*6 + pid
 	path = results[pid]
 	pos = positions[pid]
-	nimg_path =  settings.STATIC_PATH +"/files/mohanlal/uploads/"+path.split('/')[0]+'.jpg'
+	print(path)
+	if cname=="Mohanlal_writings":
+		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
+	else:
+		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
 	
 	if request.session['ftype'] == 'img':
 		context['qimg'] = reverse('show_image')

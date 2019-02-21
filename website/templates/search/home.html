@@ -83,7 +83,7 @@
                 <div class="row text-center text-lg-left">
                 <div class="card-deck">
                 {% for name in collections %}
-                    <div class="card" style="width: 14rem;">
+                    <div class="card" style="width: 14rem;border:1px solid #999;">
                         <a href="{% url 'search' name.0 %}">
                             <img class="card-img-top" src="{{'static/placeholders/'|add:name.0|file_exists}}" height="200">
                             <div class="card-body">
