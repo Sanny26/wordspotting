@@ -27,12 +27,13 @@
         <!-- Sidebar Holder -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h3><a href="{% url 'home' %}">HW Search</a></h3>
+                <h3><a href="{% url 'home' %}"></a></h3>
             </div>
 
             <ul class="list-unstyled components">
                 
                 <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                <br>
                 {% for name in collections %}
                 <li>
                     <a href="{% url 'search' name.0 %}">{{name.1}}</a>
@@ -60,8 +61,8 @@
                         <h2>Handwritten Text Search</h2>
                     </div>
                     <div class="row justify-content-right">
-                        <a href="http://www.iitkgp.ac.in/" style="width:70px;height: 70px;" class="ml-auto"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"> </a>
-                        <a href="http://www.iitkgp.ac.in/" style="width:110px;height: 70px;" class="ml-auto"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"> </a>
+                        <a href="http://www.iitkgp.ac.in/" style="width:70px;height: 50px;" class="ml-auto"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"> </a>
+                        <a href="http://www.iitkgp.ac.in/" style="width:100px;height: 50px;" class="ml-auto"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"> </a>
                         
                         
                     </div>
@@ -74,38 +75,24 @@
                 For a given query, our system retrieves relevant handwritten pages that contain the provided keyword. 
                 </p>
                 
-                
-
-                <div class="line"></div>
                 <h4  style="color: #606060;">Available Collections</h4>
                 <p>Retrieval systems have been built for the following collections.</p>
                 <div class="alert alert-info">
                     <strong>Note: </strong> Choose from the below listed collections to try the retrieval system. Your query will be searched only in the chosen collection.
                 </div>
                 <div class="row text-center text-lg-left">
+                <div class="card-deck">
                 {% for name in collections %}
-                <div class="col-md-3 col-sm-6">
-                
-                    <!--a href="{% url 'chome' name.0 %}">
-                       <div class="box1">
-                            <img src="{{'media/placeholders/'|add:name.0|file_exists}}">
-                            <div class="box-content">
-                                <h3 class="title">{{name.1}}</h3>
-                            </div>
-                        </div>
-                    </a-->
                     <div class="card" style="width: 14rem;">
-                        <img class="card-img-top" src="{{'media/placeholders/'|add:name.0|file_exists}}" height="200">
-                        <div class="card-body">
-                            <h5 class="card-title">{{name.1}}</h5>
-    <!--p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p-->
-    <a href="{% url 'chome' name.0 %}" class="btn btn-primary">Click here!</a>
-                            
-                        </div>
+                        <a href="{% url 'search' name.0 %}">
+                            <img class="card-img-top" src="{{'static/placeholders/'|add:name.0|file_exists}}" height="200">
+                            <div class="card-body">
+                                <p class="card-title">{{name.1}}</p>
+                            </div>
+                        </a>
                     </div>
-                
-                </div>
                 {% endfor %}
+                </div>
                 </div>
                 <br>
                   

@@ -97,7 +97,7 @@ def query(request, cname):
 
 
 def search_txt(query):
-	API_URL = 'http://localhost:5000/predict'
+	API_URL = 'http://localhost:9000/predict'
 	payload = {'text': query}
 	r = requests.post(API_URL, data=json.dumps(payload)).json()
 	if r['success']:
@@ -109,7 +109,7 @@ def search_txt(query):
 	return results, positions
 
 def search_img(query):
-	API_URL = 'http://localhost:5000/predict'
+	API_URL = 'http://localhost:9000/predict'
 	payload = {'image': query}
 	print('sent query')
 	r = requests.post(API_URL, files=payload).json()
