@@ -9,29 +9,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>HW Search</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-    <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     
-
-     <!-- jQuery CDN - Slim version (=without AJAX) -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <!-- Popper.JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
-
-    <Font Awesome JS >
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
-    <!--script src="{% static 'js/keyboard.js' %}" charset="UTF-8"></script-->
     <script type="text/javascript" src="{% static '/js/pramukhime.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/pramukhindic.js' %}"></script>
 
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
-    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
-    
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">   
     <script>
       $(function() {
 
@@ -45,17 +35,130 @@
             $("#imgquery").attr('style','display:flex;');
             $("#imgname").attr('placeholder',label);
             console.log(label);
-          });  
+          });
 
           $("#closebtn").click(function(){
-            location.reload();
-        }); 
+              location.reload();
+          }); 
 
-        $('[data-toggle="tooltip"]').tooltip();
+          $('[data-toggle="tooltip"]').tooltip();
       });
-
-
     </script>
+
+    <script type="text/javascript">
+      $(function() {       
+        var $caps = $('.capslock'),
+            $char = $('.char');
+        
+        $caps.click(function() {
+          if($caps.hasClass('on')) {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toLowerCase());
+            });
+          $caps.removeClass('on');
+            
+          } else {
+            $('.char,.capslock').each(function() {
+              $(this).text($(this).text().toUpperCase());
+            });
+            $caps.addClass('on');
+          }
+        });
+        
+        $('li').click(function() {
+          var t = this;
+           $(this).addClass('touch');
+           setTimeout(function() {
+             $(t).removeClass('touch');
+           },100);
+        });
+        
+        var lastFocus,
+            selectionStart,
+            selectionEnd;
+
+        $('textarea,input').on('focus', function() {
+          $('textarea,input').removeClass('focus');
+          $(this).addClass('focus');
+        });
+        
+        $('textarea,input').on('blur', function() {
+          lastFocus = this;
+          selStart = this.selectionStart;
+          selEnd = this.selectionEnd;
+        });
+        
+        $('.char').click(function() {
+          var char = $(this).text();
+          sendChar(char);
+        });
+        
+        $('.return').click(function() {
+          sendChar('\n');
+        });
+        
+        $('.space').click(function() {
+          sendChar(' ');
+        });
+        
+        $('.backspace').click(function() {
+          backspace();
+        });
+        
+        $('.tab').click(function() {
+          tab();
+        });
+        
+        function tab() {
+          var $inputs = $('textarea,input');
+          var currIndex = parseInt($(lastFocus).attr('tabIndex'));
+          var highestIndex = -1;
+          var selected = false;
+          $inputs.each(function() {
+            var index = parseInt($(this).attr('tabIndex'));
+            if(index > highestIndex) {
+              highestIndex = index;
+            }
+            if(index === currIndex+1) {
+              $(this).focus();
+              selected = true;
+            }
+          });
+              
+          if(!selected && currIndex === highestIndex) {
+            $inputs.each(function() {
+              var index = parseInt($(this).attr('tabIndex'));
+              if(index === 1) {
+                $(this).focus();
+              }
+            });
+          }    
+        }
+        
+        function backspace() {
+           var orig = $(lastFocus).val();
+           var updated = orig.substring(0, selStart-1) + orig.substring(selEnd, orig.length);
+           $(lastFocus).val(updated);
+           selEnd = --selStart;
+           $(lastFocus).focus();
+           lastFocus.selectionStart = selStart;
+           lastFocus.selectionEnd = selEnd;
+        }
+        
+        function sendChar(char) {
+          var orig = $(lastFocus).val();
+          var updated =  orig.substring(0, selStart) + char + orig.substring(selEnd, orig.lenght);
+          $(lastFocus).val(updated);
+          selEnd=++selStart;
+          $(lastFocus).focus();
+          lastFocus.selectionStart = selStart;
+          lastFocus.selectionEnd = selEnd;
+        };
+        
+      });
+    </script>
+
+    
 </head>
 
 <body>
@@ -89,7 +192,7 @@
         <div class="row">
       <div class="col-md-12 col-lg-12 col-sm-12">
         <div class="search-block">
-          <h6 class="text-center">Search from a collection of Mohanlal's blog post</h6>
+          <h6 class="text-center">Search from a collection of {{Cname}}</h6>
           <form method="post" enctype="multipart/form-data" class="form" style="width:100%;"novalidate>
             <div class="row justify-content-center align-items-center ">
               
