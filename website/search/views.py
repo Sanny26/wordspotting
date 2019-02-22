@@ -248,7 +248,11 @@ def results(request):
 	form1 = SearchForm()
 	context['form1'] = form1
 		
-	print(results)
+	if len(results)==0:
+		context['nflag'] = 1
+	else:
+		context['nflag'] = 0
+	print('!!!!!!!!1', context['nflag'])
 	for i, each in enumerate(results):
 		pages.append([each.split('/')[0]+'.jpg', each, i])
 
@@ -314,7 +318,10 @@ def line_results(request):
 	form1 = SearchForm()
 	context['form1'] = form1
 		
-	print(results)
+	if len(results)==0:
+		context['nflag'] = 1
+	else:
+		context['nflag'] = 0
 	for i, each in enumerate(results):
 		pages.append([each.split('/')[0]+'.jpg', each, i])
 
@@ -416,7 +423,6 @@ def view_results(request, page, pid):
 		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
 	else:
 		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
-	print('!!!view!!! ', path)
 	
 	if request.session['ftype'] == 'img':
 		context['qimg'] = reverse('show_image')

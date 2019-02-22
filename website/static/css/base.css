@@ -24,7 +24,7 @@ p{
 }
 
 .search-block{
-	margin-top: 10px;
+	margin-top: 60px;
 	padding-top: 5px;
 
   align-items:center;
@@ -43,4 +43,42 @@ p{
     height:0;
     outline: none;
     cursor: inherit;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 20px 0;
+}
+
+.figure  img:hover{
+    height: 72px;
+    width: 152px;
+    border:5px outset #021a40;
+    cursor: pointer;
+}
+.figure-caption :hover{
+    color:blue;
+}
+
+.figure1  img:hover{
+    border:5px outset #021a40;
+    cursor: pointer;
+}
+
+.simg{
+    width:300px;
+    height: 275px;
+    padding:1px;
+    border:2px outset #999;
+    
+}
+
+.simg:hover{
+    width:390px;
+    height: 500px;
+    padding:1px;
+    border:2px outset #999;
+    
 }
