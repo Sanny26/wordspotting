@@ -25,7 +25,7 @@ SECRET_KEY = '$i20x@g#r$(bwt@rj0ljc$grf#(%6uj#@4s@&rt8xcp$msgqro'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.2.16.191', 'localhost']
+ALLOWED_HOSTS = ['10.2.16.191', 'localhost', '127.0.0.1', 'preon.iiit.ac.in']
 
 
 # Application definition
@@ -118,7 +118,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/hw-search/static/'
 STATIC_PATH = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = ( STATIC_PATH, )
 

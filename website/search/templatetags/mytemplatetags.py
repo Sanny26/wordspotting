@@ -8,7 +8,7 @@ register = template.Library()
 def file_exists(filepath):
     path = os.path.join(settings.BASE_DIR, filepath) + '.jpg'
     if os.path.isfile(path):
-        return '/'+filepath + '.jpg'
+        return '/hw-search/'+filepath + '.jpg'
     else:
         return "http://placehold.it/150x150?text=Collection"
 

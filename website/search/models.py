@@ -1,5 +1,4 @@
 from django.db import models
-from languages.fields import LanguageField
 
 # Create your models here.
 

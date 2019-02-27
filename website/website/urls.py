@@ -22,7 +22,7 @@ from . import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('search.urls'))
+    path('hw-search/', include('search.urls'))
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image
 import pickle
-import matplotlib.pyplot as plt
+
 import time
 import os
 from shutil import copyfile
@@ -105,9 +105,9 @@ def query(request, cname):
 
 def search_txt(query, cname):
 	if cname=="Mohanlal_writings":
-		API_URL = 'http://localhost:5000/predict' 
+		API_URL = 'http://preon.iiit.ac.in:9710/predict' 
 	else:
-		API_URL = 'http://localhost:9700/predict'
+		API_URL = 'http://preon.iiit.ac.in:9700/predict'
 	payload = {'text': query}
 	r = requests.post(API_URL, data=json.dumps(payload)).json()
 	if r['success']:
@@ -120,9 +120,9 @@ def search_txt(query, cname):
 
 def search_img(query, cname):
 	if cname=="Mohanlal_writings":
-		API_URL = 'http://localhost:5000/predict' 
+		API_URL = 'http://preon.iiit.ac.in:9710/predict' 
 	else:
-		API_URL = 'http://localhost:9700/predict'
+		API_URL = 'http://preon.iiit.ac.in:9700/predict'
 	payload = {'image': query}
 	print('sent query')
 	r = requests.post(API_URL, files=payload).json()
