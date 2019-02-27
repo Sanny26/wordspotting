@@ -225,7 +225,7 @@
                     </div>
                     <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
                         <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
-                        <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" title="Search by example query image."><i class="fas fa-image"></i>
+                        <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" data-placement="right" title="Search by example query image."><i class="fas fa-image"></i>
                           {{ form1.imquery }}
                           <script language="javascript" type="text/javascript">
                               pramukhIME.addKeyboard(PramukhIndic,"{{lang}}"); 
@@ -268,11 +268,29 @@
         <div class="col-12">
           <div class="row justify-content-center">
             <div class="card">
-              <div class="card-body">
-                <p>Start searching by clicking on one of the below words.</p>
-                {% for img in demo_imgs %}
-                    <a href="{% url 'dresults' img|split_name %}"><img src="{% static '/files/'|add:cname|add:'/imgs/'|add:img %}" width="100" height="50" style="border: 1px solid #999">
-                {% endfor %}
+              <div class="card-body" data-toggle="tooltip" title="Try clicking on a word image!">
+                <a href="#" data-toggle="tooltip" title="Hooray!"></a>
+                <p>Some sample words that occur in this collection.</p>
+                
+                <div class="row justify-content-center">
+                  {% for img in demo_imgs %}
+                    {% if forloop.counter < 4 %}
+                      <a href="{% url 'dresults' img|split_name %}" class="ml-1 mb-1"><img src="{% static '/files/'|add:cname|add:'/imgs/'|add:img %}" width="100" height="50" style="border: 1px solid #999">
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+               
+                <div class="row justify-content-center">
+                  {% for img in demo_imgs %}
+                    {% if forloop.counter > 4 %}
+                      <a href="{% url 'dresults' img|split_name %}" class="ml-1 mb-1"><img src="{% static '/files/'|add:cname|add:'/imgs/'|add:img %}" width="100" height="50" style="border: 1px solid #999">
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+
+
               </div>
             </div>
           </div>

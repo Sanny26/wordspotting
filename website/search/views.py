@@ -124,15 +124,12 @@ def search_img(query, cname):
 	else:
 		API_URL = 'http://preon.iiit.ac.in:9700/predict'
 	payload = {'image': query}
-	print('sent query')
 	r = requests.post(API_URL, files=payload).json()
-	print('recevied query')
 	if r['success']:
 		results = r['results']
 		positions = r['positions']
 	else:
 		return False
-	print(results)
 	return results, positions
 
 def show_image(request):
@@ -144,7 +141,6 @@ def show_image(request):
 
 def show_page(request):
 	begin = time.time()
-	print(request.session['path'])
 	path = request.session['path']
 	pos = request.session['pos']
 	nimg = cv2.imread(path)
@@ -172,7 +168,6 @@ def show_line(request, pid):
 	else:
 		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
 	nimg = cv2.imread(path)
-	print(path)
 	y1, y2, x1, x2 = positions[int(pid)]
 	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
 	nimg = nimg[max(0, y1-30):y2+30, :]
@@ -183,18 +178,22 @@ def show_line(request, pid):
 	return response
 
 
-def demo_results(request, img):
+def demo_results(request, img_id):
 	cname = request.session['cname']
 	Cname = cname.replace('_', ' ')
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	demo_path = collection.demo_path
-	img_path =  settings.STATIC_PATH + demo_path +'/'+ img + '.jpg'
+	img_path =  settings.STATIC_PATH + demo_path +'/'+ img_id + '.jpg'
 	fb = open(img_path, 'rb')
 	f = fb.read()
 	b = bytearray(f)
 	img = cv2.imdecode(np.asarray(b), 1)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	results, positions = search_img(b, cname)
+	# results, positions = search_img(b, cname)
+	# with open('static/files/'+cname+'/results/'+img_id+'.p', 'wb') as f:
+	# 	pickle.dump([results, positions], f)
+	with open('static/files/'+cname+'/results/'+img_id+'.p', 'rb') as f:
+	 	results, positions = pickle.load(f)
 	request.session['results'] = results[0]
 	request.session['positions'] = positions
 	request.session['cname'] = cname
@@ -252,7 +251,6 @@ def results(request):
 		context['nflag'] = 1
 	else:
 		context['nflag'] = 0
-	print('!!!!!!!!1', context['nflag'])
 	for i, each in enumerate(results):
 		pages.append([each.split('/')[0]+'.jpg', each, i])
 
