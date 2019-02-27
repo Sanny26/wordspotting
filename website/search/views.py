@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, reverse
 from django.core.paginator import Paginator
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 import numpy as np
 import cv2
@@ -33,6 +34,33 @@ def redirect_query(request, cname, choice):
 		return redirect('text_query')
 	else:
 		return redirect('home')
+
+
+@csrf_exempt
+def cropsearch(request):
+	if request.method == 'POST':
+		params = json.loads(request.body.decode('utf-8'))
+		pos = params['pos']
+		x1, y1 = pos['x']/800, pos['y']/1000
+		x2, y2 = pos['x2']/800, pos['y2']/1000
+		nimg = cv2.imread(request.session['path'])
+		h, w, _ = nimg.shape
+		y1, y2 = int(y1*h), int(y2*h) 
+		x1, x2 = int(x1*w), int(x2*w)
+		word = nimg[y1:y2, x1:x2]
+		success, a_numpy = cv2.imencode('.jpg', word)
+		a = bytearray(a_numpy.tostring())
+		results, positions = search_img(a, request.session['cname'])
+		word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+		request.session['results'] = results[0]
+		request.session['positions'] = positions
+		request.session['ftype'] = 'img'
+		request.session['qimg'] = word.tolist()
+		print('enter!!')
+		astr = "<html><b> you sent an ajax post request </b> <br> returned data</html>"
+		return HttpResponse("Success!")
+
+	return redirect('home')
 
 def index(request):
 	page_template =  'search/home.html'
@@ -124,15 +152,12 @@ def search_img(query, cname):
 	else:
 		API_URL = 'http://preon.iiit.ac.in:9700/predict'
 	payload = {'image': query}
-	print('sent query')
 	r = requests.post(API_URL, files=payload).json()
-	print('recevied query')
 	if r['success']:
 		results = r['results']
 		positions = r['positions']
 	else:
 		return False
-	print(results)
 	return results, positions
 
 def show_image(request):
@@ -144,12 +169,16 @@ def show_image(request):
 
 def show_page(request):
 	begin = time.time()
-	print(request.session['path'])
 	path = request.session['path']
 	pos = request.session['pos']
+	results = request.session['results']
+	cname = request.session['cname']
+	positions = request.session['positions']
+
 	nimg = cv2.imread(path)
 	if request.session['mflag'] == 0:
 		y1, y2, x1, x2 = pos
+		print('!!!!!', pos)
 		nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
 	else:
 		for each in pos:
@@ -172,7 +201,6 @@ def show_line(request, pid):
 	else:
 		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
 	nimg = cv2.imread(path)
-	print(path)
 	y1, y2, x1, x2 = positions[int(pid)]
 	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
 	nimg = nimg[max(0, y1-30):y2+30, :]
@@ -192,6 +220,7 @@ def demo_results(request, img):
 	fb = open(img_path, 'rb')
 	f = fb.read()
 	b = bytearray(f)
+	print(type(b))
 	img = cv2.imdecode(np.asarray(b), 1)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	results, positions = search_img(b, cname)
@@ -252,7 +281,6 @@ def results(request):
 		context['nflag'] = 1
 	else:
 		context['nflag'] = 0
-	print('!!!!!!!!1', context['nflag'])
 	for i, each in enumerate(results):
 		pages.append([each.split('/')[0]+'.jpg', each, i])
 

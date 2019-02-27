@@ -15,6 +15,7 @@
 
      <!-- jQuery CDN - Slim version (=without AJAX) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <!-- Popper.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
     <!-- Bootstrap JS -->
@@ -26,8 +27,11 @@
     <!--script src="{% static 'js/keyboard.js' %}" charset="UTF-8"></script-->
     <script type="text/javascript" src="{% static '/js/pramukhime.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/pramukhindic.js' %}"></script>
-
+    <script type="text/javascript" src="{% static '/js/jquery.Jcrop.min.js' %}"></script>
+    
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
+    <link href="{% static 'css/jquery.Jcrop.css' %}" rel="stylesheet">
     <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
     
     <script>
@@ -164,6 +168,49 @@
         
       });
     </script>
+    <script type="text/javascript">
+      $(function() { 
+        $("#crop").click(function(event) {
+          var jcrop_api;
+          var position;
+          $("#mybutton").attr('style','display:flex;');
+
+          $('#target').Jcrop({
+            onChange:   showCoords,
+            onSelect:   showCoords
+          },function(){
+            jcrop_api = this;
+          });
+        });
+
+        // Simple event handler, called from onChange and onSelect
+        // event handlers, as per the Jcrop invocation above
+        function showCoords(c)
+        {
+            console.log(c);
+            position = c;
+        };
+
+        $("#cropsearch").click(function(event) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "cropsearch" %}',
+                contentType: 'application/json; charset=utf-8', //EDITED
+                data: JSON.stringify({'pos':position}),
+                dataType: 'json',
+                success:function (response) {
+                  alert(response);
+                  window.location = "{% url 'results' %}";
+                },
+                error: function(xhr, status, e) {
+                  alert(status, xhr, e);
+                }
+
+            });
+        }); 
+
+      });
+    </script>
 </head>
 
 <body>
@@ -228,13 +275,13 @@
                         </div>
                         <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
                             <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
-                        <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" title="Search by example query image."><i class="fas fa-image"></i>
-                          {{ form1.imquery }}
-                          <script language="javascript" type="text/javascript">
+                            <script language="javascript" type="text/javascript">
                               pramukhIME.addKeyboard(PramukhIndic,"{{lang}}"); 
                               pramukhIME.enable();
-                          </script>
-                        </label>
+                            </script>
+                            <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" data-placement="bottom" title="Search by example query image."><i class="fas fa-image"></i>
+                              {{ form1.imquery }}  
+                            </label>
                         </div>
                       </div>
                     </div>
@@ -267,7 +314,8 @@
         		<strong>{{qimg}}</strong></p>
         		{% endif %}
         </div>
-        <div class="row justify-content-center"> 
+        <div class="d-flex justify-content-around"> 
+            <p class="pull-left"><a href="#" id="crop">Crop and search for words.</a></p>
             {% if prev_pid >= 0 %}
             <p class="text-secondary"><a href={% url 'view_results' page prev_pid %}> prev </a> | 
             {% endif %}                 
@@ -278,10 +326,25 @@
         </div>
 			
     		<div class="d-block ">
-          <div class="row justify-content-center align-items-center" >
-            <img src="{{nimg}}" style="padding:1px;border:1px solid #021a40;" width="800px" height="1000px" >
+          <div class="row justify-content-center" >
+            <div style="padding:1px;border:1px solid #021a40;">
+              <img src="{{nimg}}" width="800px" height="1000px" id="target">
+            </div>
           </div>
+          
         </div>  
+        <style>
+        #mybutton {
+          position: fixed;
+          bottom: 10px;
+          right: 3vw;
+        }
+      </style>
+        <div id="mybutton" style="display: none;">
+        <button id="cropsearch" class="btn btn-primary">Search cropped word</button>
+        </div>
+
+        
         <br><br>
     </div>
 </body>
