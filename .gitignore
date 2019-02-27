@@ -52,7 +52,10 @@ coverage.xml
 *.pot
 
 # Django stuff:
+
 db.sqlite3
+
+
 *.log
 local_settings.py
 
@@ -104,6 +107,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+
 website/static/files/*/uploads/*
 website/static/files/*/words/*
+website/static/files/*/wordImages/*
 website/db.sqlite3
+
+
+
