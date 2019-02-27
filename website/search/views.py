@@ -123,7 +123,7 @@ def search_img(query, cname):
 		API_URL = 'http://preon.iiit.ac.in:9710/predict' 
 	else:
 		API_URL = 'http://preon.iiit.ac.in:9700/predict'
-	payload = {'image': query}
+	payload = {'image': query.lower()}
 	r = requests.post(API_URL, files=payload).json()
 	if r['success']:
 		results = r['results']
