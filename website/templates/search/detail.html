@@ -1,0 +1,133 @@
+{% load static from staticfiles %}
+{% load mytemplatetags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>HW Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+
+    
+    <Font Awesome JS >
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>   
+    
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- Sidebar Holder -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><a href="{% url 'home' %}">HW Search</a></h3>
+            </div>
+
+            <ul class="list-unstyled components">
+                
+                <li><a href="{% url 'home' %}">Home</a></li>
+                {% for name in collections %}
+                <li>
+                    <a href="{% url 'search' name.0 %}">{{name.1}}</a>
+                </li>
+                
+                {% endfor %}
+                <br>
+                <li><a href="{% url 'about_project' %}">About the project</a></li>
+            </ul>
+
+        </nav>
+
+        <!-- Page Content Holder -->
+        <div id="content">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+
+                    <button type="button" id="sidebarCollapse" class="navbar-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <div class="row justify-content-center">
+                        <h2>Handwritten Text Search</h2>
+                    </div>
+                    <div class="row justify-content-right">
+                        <a href="http://cvit.iiit.ac.in/" style="width:70px;height: 50px;" class="ml-auto"><img src="{% static 'icons/lab.jpg' %}" style="width:100%;height:100%;object-fit:contain"> </a>
+                        <a href="http://iiit.ac.in/" style="width:100px;height: 50px;" class="ml-auto"><img src="{% static 'icons/iiith.png' %}" style="width:100%;height:100%;object-fit:contain"> </a>
+                        
+                        
+                    </div>
+                    
+                </div>
+            </nav>
+            <div id="mcontent">
+                <h4 style="color: #606060;">Technical Details</h4>
+                <br>
+                <h5 style="color: #606060;">Overview</h5>
+                <p style="font-size: 1.0em;">For a given query, a wordspotting classifier is used to generate a feature vector for the query. The pretrained classifier shown in this demo can process both image and text queries and spot similar words in handwritten documentnts.
+                <br><br>
+                For each collection, we calculate the features for all the words in the collection and index them using the <a href="https://code.fb.com/ml-applications/faiss-a-library-for-efficient-similarity-search/" style="color:#428bca;">Faiss library</a>. This feature index is used during query time to retrieve relevant results and this indexing is done at collection level.
+                <br>At query time, the calculated feature vector is used to obtain nearest neighbours from the collection's index file.</p>
+                <div class="row justify-content-center">
+                <img class="img-thumbnail" src="{% static 'images/system.png'%}" height="400" width="400">
+                </div>               
+                <div class="line"></div>
+                <h5 style="color: #606060;">Feature extraction and Wordspotting</h5>
+                <p style="font-size: 1.0em;">
+                    The DNN model used in this project has been trained to compute a representation(embedding) for a given input sample. The input samples used for training the model is a corresponding pair of handwritten word image and its machine encoded text. The basic idea here is to embed both images and its labels (text) into a common subspace which respects lexical similarity across domains/modalities (image and text) and finding the nearest neighbors in this space enables both word spotting and recognition.
+                    <br><br>
+                    The image below displays a block diagram of trained DNN. The network has two streams(smaller networks) namely, image stream and label stream. Image stream is trained to learn computing representations for handwritten word images, whereas the label stream is meant for learning representations for text. The whole network is optimized to reduce the ranking loss between representations of image and text.<br> 
+                <div class="row justify-content-center">
+                <img class="img-thumbnail" src="{% static 'images/model.png'%}" height="400" width="400">
+                </div>
+                <br>
+                    During training, the model is first trained using a huge corpus of synthetic data in English langauge. To learn models in different languages, the pretained model is then finetuned with the help of real training data in target langauge.<br><br>
+                    For collections shown in this demo, we have used already trained models to compute representations for words in the collection. In other words, the models used for searching in this demo are not trained with the collection's training data. We use the models only to infer and compute a representation that enables us to spot the word in different documents.
+                </p>
+                <div class="line"></div>
+                <h5 style="color: #606060;">Publications</h5>
+                <p style="font-size: 1.0em;">
+                    <ul>
+                    <li>Praveen Krishnan, Kartik Dutta, C.V. Jawahar, <a href="https://www.dropbox.com/s/2xjs867jujhzm0f/word-spotting-recognition-1.pdf?dl=0" style="color:#428bca;">Word Spotting and Recognition Using Deep Embedding</a>, DAS 2018.</li>
+                    <li>Praveen Krishnan, Kartik Dutta, Minesh Mathew, C.V. Jawahar, <a href="http://cvit.iiit.ac.in/images/ConferencePapers/2018/spotting-recognition-handwritten.pdf" style="color:#428bca;">Towards Spotting and Recognition of Handwritten Words in Indic Scripts</a>, ICFHR 2018.</li>
+                    
+                    <li>Praveen Krishnan, C.V. Jawahar, <a href="https://arxiv.org/pdf/1802.06194.pdf" style="color:#428bca;">HWNet v2: An Efficient Word Image Representation for Handwritten Documents</a>,   arXiv:1802.06194.</li>
+                    <li>Praveen Krishnan, Kartik Dutta, C.V. Jawahar, <a href="http://cvit.iiit.ac.in/images/ConferencePapers/2016/deepfeatembed_ICFHR2016.pdf" style="color:#428bca;">Deep Feature Embedding for Accurate Recognition and Retrieval of Handwritten Text</a>, ICFHR 2016.</li>
+                    <li>Praveen Krishnan, C.V. Jawahar. <a href="http://cvit.iiit.ac.in/images/ConferencePapers/2016/MatchingHW_ECCV16.pdf" style="color:#428bca;">Matching Handwritten Document Images</a>, ECCV 2016.</li>
+                    <li>Praveen Krishnan, C.V. Jawahar. <a href="https://arxiv.org/pdf/1608.04224.pdf" style="color:#428bca;"> Generating Synthetic Data for Text Recognition</a>, arXiv:1608.04224.</li>
+                    </ul>
+                    
+                </p>
+                <div class="line"></div>
+                
+                
+            </div>
+    </div>
+
+
+
+    <!-- jQuery CDN - Slim version (=without AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!-- Popper.JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $(this).toggleClass('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -30,7 +30,7 @@
 
             <ul class="list-unstyled components">
                 
-                <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{% url 'home' %}">Home</a></li>
                 {% for name in collections %}
                 <li>
                     <a href="{% url 'search' name.0 %}">{{name.1}}</a>
@@ -68,6 +68,13 @@
                 </div>
             </nav>
             <div id="mcontent">
+                <h4 style="color: #606060;">About</h4>
+                <p style="font-size: 1.0em;">
+                    This application is a demonstration of the technical capability of searching and spotting handwritten documents.
+                    <br>This demo is powered by research carried out at CVIT, IIIT Hyderabad.
+                </p>
+                <div class="line"></div>
+                
                 <h4 style="color: #606060;">Motivation</h4>
                 <p style="font-size: 1.0em;">
                     Large collections of handwritten documents containing valuable information have been digitized and preserved. However, making these collections accessible and usable should be our main objective and this task still remains a challenge for many Indian langauges.
@@ -75,19 +82,7 @@
                     In this application, we demonstrate systems that enables the users to search for keywords in handwritten document collections. Through this application, users will be able to access relevant information from handwritten documents for a given search term.
                 </p>
                 <div class="line"></div>
-
-                <h4 style="color: #606060;">Technical Detail</h4>
-                <p style="font-size: 1.0em;">For a given query, a wordspotting classifier is used to generate a feature vector for the query. This pretrained classifier can process both image and text queries.
-                <br>
-                For each collection, features are calculated for all the words in the collection and a k-d tree is constructed using these features. This is used during query time to retrieve relevant results. These trees are stored collection wise.
-                <br>At query time, the calculated feature vector is used to obtain nearest neighbours from the precalculated k-d tree for that collection.</p>
-                <div class="row justify-content-center">
-                <img class="img-thumbnail" src="{% static 'images/system.png'%}" height="400" width="400">
-                </div>
-                <div id="hyperlink">
-                    <p style="font-size: 1.0em;">For more technical details, read this article by <a href="https://arxiv.org/pdf/1802.06194.pdf">clicking here.</a></p>
-                </div>
-                <div class="line"></div>
+                <p style="font-size: 1.0em;"><strong>Technical details of this demo are explained <a href="{% url 'detail' %}" style="color:#428bca;">here</a></strong></p>
                 
                 
             </div>

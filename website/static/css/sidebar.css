@@ -382,3 +382,35 @@ body{background-color:#f1f1f2}
     border:5px outset #021a40;
     cursor: pointer;
 }
+
+.card-img-caption {
+  border-top-left-radius: calc(.25rem - 1px);
+  border-top-right-radius: calc(.25rem - 1px);
+  /* shrink wrap to image */
+    overflow: hidden;
+}
+  
+.card-img-caption .card-img-top {
+  z-index: 0;
+}
+
+.card-img-caption img {
+    display: block; /* no whitespace */
+    transition: .3s ease-in-out;
+  }
+
+.card-img-caption img:hover {
+  transform: scale(1.1);
+}
+    
+.card-img-caption .card-text {
+  text-align: center;
+  vertical-align: middle;
+  width: 100%;
+  margin: 68% 0;
+  padding: 25px 5px;
+  position: absolute;
+  z-index: 1;
+  background-color: rgba(66, 139, 202, 0.7);
+  color:white;
+}

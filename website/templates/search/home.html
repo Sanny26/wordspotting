@@ -32,7 +32,7 @@
 
             <ul class="list-unstyled components">
                 
-                <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{% url 'home' %}">Home</a></li>
                
                 {% for name in collections %}
                 <li>
@@ -80,15 +80,15 @@
                 <div class="alert alert-info">
                     <strong>Note: </strong> Choose from the below listed collections to try the retrieval system. Your query will be searched only in the chosen collection.
                 </div>
-                <div class="row text-center text-lg-left">
+                <div class="row justify-content-left">
                 <div class="card-deck">
                 {% for name in collections %}
-                    <div class="card" style="width: 14rem;border:1px solid #999;">
-                        <a href="{% url 'search' name.0 %}">
-                            <img class="card-img-top" src="{{'static/placeholders/'|add:name.0|file_exists}}" height="200">
-                            <div class="card-body">
-                                <p class="card-title">{{name.1}}</p>
-                            </div>
+                    <div class="card" style="width: 25rem;border:1px solid #999;">
+                        <a href="{% url 'search' name.0 %}" data-toggle="tooltip" title="Click to search in this collection.">
+                            <div class="card-img-caption">
+                                <h4 class="card-text" id="cname">{{name.1}}</h4>
+                                <img class="card-img-top"  src="{{'static/placeholders/'|add:name.0|file_exists}}" height="350">
+                            </div>   
                         </a>
                     </div>
                 {% endfor %}

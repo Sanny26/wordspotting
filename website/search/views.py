@@ -17,6 +17,12 @@ import json
 from .models import Collection
 from .forms import SearchForm
 
+def detail(request):
+	page_template = 'search/detail.html'
+	context = {}
+	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
+	return render(request, page_template, context)
 
 def about_project(request):
 	page_template = 'search/about.html'
