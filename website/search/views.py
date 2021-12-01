@@ -13,21 +13,27 @@ import os
 from shutil import copyfile
 import requests
 import json
+import base64
 
 from .models import Collection
 from .forms import SearchForm
+from .nms import non_max_suppression_fast
+
+# global pos_index
+# with open('/media/data1/simple-keras-rest-api/gw/positions.pkl', 'rb') as fobj:
+#         pos_index = pickle.load(fobj)
 
 def detail(request):
 	page_template = 'search/detail.html'
 	context = {}
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
 def about_project(request):
 	page_template = 'search/about.html'
 	context = {}
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
@@ -43,7 +49,7 @@ def redirect_query(request, cname, choice):
 def index(request):
 	page_template =  'search/home.html'
 	context = {}
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
@@ -58,82 +64,49 @@ def collection_index(request, cname):
 	context['cname'] = cname
 	if collection.collection_link != '':
 		context['url'] = collection.collection_link
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
-def query(request, cname):
-	page_template =  'search/search.html'
-	request.session['cname'] = cname
-	Cname = cname.replace('_', ' ')
-	collection = Collection.objects.filter(collection_name = Cname)[0]
-	context = {}
-	context['desc'] = collection.desc
-	context['url'] = collection.collection_link
-	context['lang'] = collection.language
-	context['demo_imgs'] = os.listdir(settings.STATIC_PATH +"/files/"+cname+"/imgs/")
-	context['cname'] = cname
-	context['Cname'] = Cname
-	
-	if request.method == 'POST':
-		form1 = SearchForm(request.POST, request.FILES)
-		if form1.is_valid():
-			if 'imquery' in request.FILES:
-				fobj = request.FILES['imquery']
-				jpeg_array = bytearray(fobj.read())
-				img = cv2.imdecode(np.asarray(jpeg_array), 1)
-				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array, cname)
-				request.session['results'] = results[0]
-				request.session['positions'] = positions
-				request.session['cname'] = cname
-				request.session['ftype'] = 'img'
-				request.session['qimg'] = img.tolist()
-				return redirect('results')
-			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
-				request.session['results'] = results[0]
-				request.session['positions'] = positions
-				request.session['cname'] = cname
-				request.session['ftype'] = 'txt'
-				request.session['qimg'] = form1.cleaned_data['txtquery']
-				return redirect('results')
-
-		else:
-			print(form1.errors)
-
-	form1 = SearchForm()
-	context['form1'] = form1
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
-	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
-	return render(request, page_template, context)
-
-
-def search_txt(query, cname):
-	if cname=="Mohanlal_writings":
-		API_URL = 'http://preon.iiit.ac.in:9710/predict' 
-	else:
-		API_URL = 'http://preon.iiit.ac.in:9700/predict'
-	payload = {'text': query.lower()}
+def search_txt(query, api_cname):
+	# if cname=="Mohanlal_writings":
+	# 	API_URL = 'http://localhost:9710/predict'
+	# else:
+	API_URL = 'http://localhost:9700/predict'
+	API_URL = 'http://10.4.16.103:9700/predict'
+	payload = {'text': query.lower(), 'cname':api_cname}
+	# payload = {'text': query.lower(), 'cname':'coi_i2'}
+	print('Payload: ', payload)
 	r = requests.post(API_URL, data=json.dumps(payload)).json()
 	if r['success']:
-		results = r['results']
-		positions = r['positions']
+		results = []
+		positions = []
+		for item in r['results']:
+			results.append(item[0])
+			positions.append(item[1][0])
 	else:
 		return False
-
+	# print('API function...', positions)
+	# print('API function...', results)
 	return results, positions
 
-def search_img(query, cname):
-	if cname=="Mohanlal_writings":
-		API_URL = 'http://preon.iiit.ac.in:9710/predict' 
-	else:
-		API_URL = 'http://preon.iiit.ac.in:9700/predict'
-	payload = {'image': query}
-	r = requests.post(API_URL, files=payload).json()
+def search_img(query, api_cname):
+	# if cname=="Mohanlal_writings":
+	# 	API_URL = 'http://localhost:9710/predict'
+	# else:
+	# API_URL = 'http://localhost:9700/predict'
+	API_URL = 'http://10.4.16.103:9700/predict'
+	# print(query)
+	data = {'image': query, 'cname':api_cname}
+	#
+	headers = {'Content-type': 'application/json'}
+	r = requests.post(API_URL, data = json.dumps(data), headers=headers).json()
 	if r['success']:
-		results = r['results']
-		positions = r['positions']
+		results = []
+		positions = []
+		for item in r['results']:
+			results.append(item[0])
+			positions.append(item[1][0])
 	else:
 		return False
 	return results, positions
@@ -147,38 +120,56 @@ def show_image(request):
 
 def show_page(request):
 	begin = time.time()
+	results = request.session['results']
+	pos_index = request.session['positions']
 	path = request.session['path']
-	pos = request.session['pos']
 	nimg = cv2.imread(path)
-	if request.session['mflag'] == 0:
-		y1, y2, x1, x2 = pos
-		nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
-	else:
-		for each in pos:
-			y1, y2, x1, x2 = each
-			nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)	
+	nimg = cv2.cvtColor(nimg, cv2.COLOR_RGB2BGR)
+	# print('---------------> Page', path)
 
+	for each in pos_index[request.session['rind']]:
+		print('--------------> Pos ', each)
+		# y1, y2, x1, x2 = list(map(int, pos_index[each]))
+		y1, y2, x1, x2 = each
+		nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (255, 0, 0), 3)
 	nimg = Image.fromarray(nimg)
+	# print('--------------------------->', nimg.mode)
 	response = HttpResponse(content_type="image/png")
 	nimg.save(response, "PNG")
 	print('Time to render total page', time.time()-begin)
 	return response
 
 def show_line(request, pid):
+	pid = int(pid)
 	results = request.session['results']
+	pos_index = request.session['positions']
 	cname = request.session['cname']
-	positions = request.session['positions']
-	path = results[int(pid)]
-	if cname=="Mohanlal_writings":
-		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
-	else:
-		path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
+	path = results[pid]
+	path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path+'.jpg'
+	print('---------------->', path)
 	nimg = cv2.imread(path)
-	y1, y2, x1, x2 = positions[int(pid)]
-	nimg = cv2.rectangle(nimg, (x1, y1), (x2, y2), (0, 255, 0), 3)
-	nimg = nimg[max(0, y1-30):y2+30, :]
+	nimg = cv2.cvtColor(nimg, cv2.COLOR_RGB2BGR)
 
-	nimg = Image.fromarray(nimg)
+	nms_input = []
+	lines_bboxes = []
+	for ptuple in pos_index[pid]:
+		rt, rb, ct, cb = ptuple
+		nimg = cv2.rectangle(nimg, (ct, rt), (cb, rb), (255, 0, 0), 5)
+		lines_bboxes.append([rt, 0, rb, nimg.shape[1]])
+		# nms_input.append([rt, 0, rb, nimg.shape[1]])
+	# lines_bboxes = non_max_suppression_fast(np.array(nms_input), 0.3)
+	# print(pos_index[pid])
+	# print('---->   Len of line boxes', pid, len(lines_bboxes))
+
+	phrase_context_imgs = []
+	for y1, _, y2, _ in lines_bboxes:
+		img = cv2.copyMakeBorder(nimg[max(0, y1-30):y2+30, :],
+				                     0, 5, 0, 0, borderType=cv2.BORDER_CONSTANT, value=[255, 255, 255])
+		phrase_context_imgs.append(img)
+	# print('Len of line boxes', len(phrase_context_imgs))
+	# print(f'---------->For Pos: {pid}, found {len(phrase_context_imgs)} phrases')
+	nimg = np.concatenate(phrase_context_imgs)
+	nimg = Image.fromarray(nimg).convert('RGB')
 	response = HttpResponse(content_type="image/png")
 	nimg.save(response, "PNG")
 	return response
@@ -189,30 +180,80 @@ def demo_results(request, img_id):
 	Cname = cname.replace('_', ' ')
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	demo_path = collection.demo_path
-	img_path =  settings.STATIC_PATH + demo_path +'/'+ img_id + '.jpg'
+	img_path =  f'{settings.STATIC_PATH}/{demo_path}/{img_id}.jpg'
 	fb = open(img_path, 'rb')
 	f = fb.read()
 	b = bytearray(f)
 	img = cv2.imdecode(np.asarray(b), 1)
-	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	# results, positions = search_img(b, cname)
+	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+	# im_b64 = base64.b64encode(b).decode("utf8")
+	# results, positions = search_img(im_b64, request.session['api_cname'])
 	# with open('static/files/'+cname+'/results/'+img_id+'.p', 'wb') as f:
 	# 	pickle.dump([results, positions], f)
+	
 	with open('static/files/'+cname+'/results/'+img_id+'.p', 'rb') as f:
 	 	results, positions = pickle.load(f)
-	request.session['results'] = results[0]
+	request.session['results'] = results
 	request.session['positions'] = positions
 	request.session['cname'] = cname
 	request.session['ftype'] = 'img'
 	request.session['qimg'] = img.tolist()
 	return redirect('results')
 
+
+def query(request, cname):
+	page_template =  'search/search.html'
+	request.session['cname'] = cname
+	Cname = cname.replace('_', ' ')
+	collection = Collection.objects.filter(collection_name = Cname)[0]
+	context = {}
+	context['desc'] = collection.desc
+	context['url'] = collection.collection_link
+	context['lang'] = collection.language
+	context['demo_imgs'] = os.listdir(settings.STATIC_PATH +"/files/"+cname+"/imgs/")
+	context['cname'] = cname
+	context['Cname'] = Cname
+	request.session['api_cname'] = collection.api_cname
+
+	if request.method == 'POST':
+		form1 = SearchForm(request.POST, request.FILES)
+		if form1.is_valid():
+			if 'imquery' in request.FILES:
+				fobj = request.FILES['imquery'].read()
+				jpeg_array = bytearray(fobj)
+				img = cv2.imdecode(np.asarray(jpeg_array), 1)
+				img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+				im_b64 = base64.b64encode(fobj).decode("utf8")
+				results, positions = search_img(im_b64, request.session['api_cname'])
+				request.session['results'] = results
+				request.session['positions'] = positions
+				request.session['cname'] = cname
+				request.session['ftype'] = 'img'
+				request.session['qimg'] = img.tolist()
+				return redirect('results')
+			elif form1.cleaned_data['txtquery']:
+				results, positions = search_txt(form1.cleaned_data['txtquery'], request.session['api_cname'])
+				# print('--------->query results: ', results)
+				request.session['results'] = results
+				request.session['positions'] = positions
+				request.session['cname'] = cname
+				request.session['ftype'] = 'txt'
+				request.session['qimg'] = form1.cleaned_data['txtquery']
+				return redirect('results')
+		else:
+			print(form1.errors)
+
+	form1 = SearchForm()
+	context['form1'] = form1
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
+	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
+	return render(request, page_template, context)
+
+
 def results(request):
 	page_template = 'search/results.html'
-	
 	results = request.session['results']
 	cname = request.session['cname']
-	positions = request.session['positions']
 	context = {}
 	pages = []
 	request.session['cname'] = cname
@@ -221,50 +262,49 @@ def results(request):
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	context['word_path'] = collection.words_path
 	context['lang'] = collection.language
-	
 
 	if request.method == 'POST':
 		form1 = SearchForm(request.POST, request.FILES)
 		if form1.is_valid():
 			if 'imquery' in request.FILES:
-				fobj = request.FILES['imquery']
-				jpeg_array = bytearray(fobj.read())
+				fobj = request.FILES['imquery'].read()
+				jpeg_array = bytearray(fobj)
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
-				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array, cname)
-				request.session['results'] = results[0]
+				img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+				im_b64 = base64.b64encode(fobj).decode("utf8")
+				results, positions = search_img(im_b64, request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
 				request.session['cname'] = cname
 				request.session['ftype'] = 'img'
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
-				request.session['results'] = results[0]
+				results, positions = search_txt(form1.cleaned_data['txtquery'], request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
+				print('----------> Received: ', positions)
 				request.session['cname'] = cname
 				request.session['ftype'] = 'txt'
 				request.session['qimg'] = form1.cleaned_data['txtquery']
 				return redirect('results')
-
 		else:
 			print(form1.errors)
 
 	form1 = SearchForm()
 	context['form1'] = form1
-		
+
 	if len(results)==0:
 		context['nflag'] = 1
 	else:
 		context['nflag'] = 0
 	for i, each in enumerate(results):
-		pages.append([each.split('/')[0]+'.jpg', each, i])
+		pages.append([each+'.jpg', results[each], i])
 
 	paginator = Paginator(pages, 6)
 
 	display_page = request.GET.get('page')
 	pages = paginator.get_page(display_page)
-
 	context['pages'] = pages
 	if request.session['ftype'] == 'img':
 		context['qimg'] = reverse('show_image')
@@ -272,13 +312,12 @@ def results(request):
 		context['qimg'] = request.session['qimg']
 	context['cname'] = cname
 	context['ftype'] = request.session['ftype']
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
 def line_results(request):
 	page_template = 'search/line_results.html'
-	
 	results = request.session['results']
 	cname = request.session['cname']
 	positions = request.session['positions']
@@ -290,27 +329,30 @@ def line_results(request):
 	collection = Collection.objects.filter(collection_name = Cname)[0]
 	context['word_path'] = collection.words_path
 	context['lang'] = collection.language
-	
+
 
 	if request.method == 'POST':
 		form1 = SearchForm(request.POST, request.FILES)
 		if form1.is_valid():
 			if 'imquery' in request.FILES:
-				fobj = request.FILES['imquery']
-				jpeg_array = bytearray(fobj.read())
+				fobj = request.FILES['imquery'].read()
+				jpeg_array = bytearray(fobj)
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
-				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array, cname)
-				request.session['results'] = results[0]
+				img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+				im_b64 = base64.b64encode(fobj).decode("utf8")
+				results, positions = search_img(im_b64, request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
 				request.session['cname'] = cname
 				request.session['ftype'] = 'img'
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
-				request.session['results'] = results[0]
+				results, positions = search_txt(form1.cleaned_data['txtquery'], request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
+				# print('---------->Line result Post Received: ', results)
+				# print('---------->Line result Post Received: ', positions)
 				request.session['cname'] = cname
 				request.session['ftype'] = 'txt'
 				request.session['qimg'] = form1.cleaned_data['txtquery']
@@ -321,13 +363,16 @@ def line_results(request):
 
 	form1 = SearchForm()
 	context['form1'] = form1
-		
+
 	if len(results)==0:
 		context['nflag'] = 1
 	else:
 		context['nflag'] = 0
+
+	print('-----> Line results: ', len(results))
 	for i, each in enumerate(results):
-		pages.append([each.split('/')[0]+'.jpg', each, i])
+		# pages.append([each[0].split('/')[0]+'.jpg', each[1][1], i])
+		pages.append([each, 'unk', i])
 
 	paginator = Paginator(pages, 3)
 
@@ -341,48 +386,17 @@ def line_results(request):
 		context['qimg'] = request.session['qimg']
 	context['cname'] = cname
 	context['ftype'] = request.session['ftype']
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
-	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
-	return render(request, page_template, context) 
-
-def mresults(request, page):
-	page_template = 'search/mresults.html'
-	context = {}
-	word_results = request.session['results']
-	positions = request.session['positions']
-	cname = request.session['cname']
-	Cname = cname.replace('_', ' ')
-	context['Cname'] = Cname
-
-	page = int(page)
-	path = word_results[page][-1]
-	pos = positions[page]
-	nimg_path = "static/data/mohanlal/uploads/"+path+'.jpg'
-	request.session['mflag'] = 1
-	request.session['path'] = nimg_path
-	request.session['pos'] = pos
-	context['nimg'] = reverse('show_page')
-	context['ftype'] = request.session['ftype']
-	context['page'] = page
-	context['mlen'] = min(10, len(word_results))
-	context['nid'] = page+1
-	context['pid'] = page-1
-	if request.session['ftype'] == 'img':
-		context['qimg'] = reverse('show_image')
-	else:
-		context['qimg'] = request.session['qimg']
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
 	return render(request, page_template, context)
 
 def view_results(request, page, pid):
 	page_template = 'search/view_results.html'
-	
+
 	pid = int(pid)
 	page = int(page)
 	results = request.session['results']
 	cname = request.session['cname']
-	positions = request.session['positions']
 	context = {}
 	request.session['cname'] = cname
 	Cname = cname.replace('_', ' ')
@@ -393,26 +407,26 @@ def view_results(request, page, pid):
 		form1 = SearchForm(request.POST, request.FILES)
 		if form1.is_valid():
 			if 'imquery' in request.FILES:
-				fobj = request.FILES['imquery']
-				jpeg_array = bytearray(fobj.read())
+				fobj = request.FILES['imquery'].read()
+				jpeg_array = bytearray(fobj)
 				img = cv2.imdecode(np.asarray(jpeg_array), 1)
-				img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-				results, positions = search_img(jpeg_array, cname)
-				request.session['results'] = results[0]
+				img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+				im_b64 = base64.b64encode(fobj).decode("utf8")
+				results, positions = search_img(im_b64, request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
 				request.session['cname'] = cname
 				request.session['ftype'] = 'img'
 				request.session['qimg'] = img.tolist()
 				return redirect('results')
 			elif form1.cleaned_data['txtquery']:
-				results, positions = search_txt(form1.cleaned_data['txtquery'], cname)
-				request.session['results'] = results[0]
+				results, positions = search_txt(form1.cleaned_data['txtquery'], request.session['api_cname'])
+				request.session['results'] = results
 				request.session['positions'] = positions
 				request.session['cname'] = cname
 				request.session['ftype'] = 'txt'
 				request.session['qimg'] = form1.cleaned_data['txtquery']
 				return redirect('results')
-
 		else:
 			print(form1.errors)
 
@@ -422,19 +436,16 @@ def view_results(request, page, pid):
 	if page!=0:
 		pid = (page-1)*3 + pid
 	path = results[pid]
-	pos = positions[pid]
-	if cname=="Mohanlal_writings":
-		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[0]+'.jpg'
-	else:
-		nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path.split('/')[1]+'.jpg'
-	
+	request.session['rind'] = pid
+	# pos = results[path][1]
+	# print('--------->Path from APi', path)
+	nimg_path =  settings.STATIC_PATH +"/files/"+cname+"/uploads/"+path+'.jpg'
+	# print('--------Updated path for loading', nimg_path)
 	if request.session['ftype'] == 'img':
 		context['qimg'] = reverse('show_image')
 	else:
 		context['qimg'] = request.session['qimg']
 	request.session['path'] = nimg_path
-	request.session['pos'] = pos
-	request.session['mflag'] = 0
 	context['nimg'] = reverse('show_page')
 	context['ftype'] = request.session['ftype']
 	context['pid'] = pid + 1
@@ -451,9 +462,7 @@ def view_results(request, page, pid):
 		context['prev_pid'] = -1
 		context['page'] = 0
 	context['cname'] = cname
-	collections = Collection.objects.all().values_list('collection_name', flat=True) 
+	collections = Collection.objects.all().values_list('collection_name', flat=True)
 	context['collections'] = [(each.replace(' ', '_'), each)for each in collections]
-	
+
 	return render(request, page_template, context)
-
-

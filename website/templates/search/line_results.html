@@ -14,14 +14,14 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    
+
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
     <script type="text/javascript" src="{% static '/js/pramukhime.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/pramukhindic.js' %}"></script>
 
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
-    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">   
+    <link href="{% static 'css/keyboard1.css' %}" rel="stylesheet">
     <script>
       $(function() {
 
@@ -39,24 +39,24 @@
 
           $("#closebtn").click(function(){
               location.reload();
-          }); 
+          });
 
           $('[data-toggle="tooltip"]').tooltip();
       });
     </script>
 
     <script type="text/javascript">
-      $(function() {       
+      $(function() {
         var $caps = $('.capslock'),
             $char = $('.char');
-        
+
         $caps.click(function() {
           if($caps.hasClass('on')) {
             $('.char,.capslock').each(function() {
               $(this).text($(this).text().toLowerCase());
             });
           $caps.removeClass('on');
-            
+
           } else {
             $('.char,.capslock').each(function() {
               $(this).text($(this).text().toUpperCase());
@@ -64,7 +64,7 @@
             $caps.addClass('on');
           }
         });
-        
+
         $('li').click(function() {
           var t = this;
            $(this).addClass('touch');
@@ -72,7 +72,7 @@
              $(t).removeClass('touch');
            },100);
         });
-        
+
         var lastFocus,
             selectionStart,
             selectionEnd;
@@ -81,34 +81,34 @@
           $('textarea,input').removeClass('focus');
           $(this).addClass('focus');
         });
-        
+
         $('textarea,input').on('blur', function() {
           lastFocus = this;
           selStart = this.selectionStart;
           selEnd = this.selectionEnd;
         });
-        
+
         $('.char').click(function() {
           var char = $(this).text();
           sendChar(char);
         });
-        
+
         $('.return').click(function() {
           sendChar('\n');
         });
-        
+
         $('.space').click(function() {
           sendChar(' ');
         });
-        
+
         $('.backspace').click(function() {
           backspace();
         });
-        
+
         $('.tab').click(function() {
           tab();
         });
-        
+
         function tab() {
           var $inputs = $('textarea,input');
           var currIndex = parseInt($(lastFocus).attr('tabIndex'));
@@ -124,7 +124,7 @@
               selected = true;
             }
           });
-              
+
           if(!selected && currIndex === highestIndex) {
             $inputs.each(function() {
               var index = parseInt($(this).attr('tabIndex'));
@@ -132,9 +132,9 @@
                 $(this).focus();
               }
             });
-          }    
+          }
         }
-        
+
         function backspace() {
            var orig = $(lastFocus).val();
            var updated = orig.substring(0, selStart-1) + orig.substring(selEnd, orig.length);
@@ -144,7 +144,7 @@
            lastFocus.selectionStart = selStart;
            lastFocus.selectionEnd = selEnd;
         }
-        
+
         function sendChar(char) {
           var orig = $(lastFocus).val();
           var updated =  orig.substring(0, selStart) + char + orig.substring(selEnd, orig.lenght);
@@ -154,17 +154,17 @@
           lastFocus.selectionStart = selStart;
           lastFocus.selectionEnd = selEnd;
         };
-        
+
       });
     </script>
 
-    
+
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-fixed-top">
         <a class="navbar-brand" href="{% url 'home' %}">Handwritten Text Search</a>
-        
+
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -172,7 +172,7 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
-            
+
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Other Collections
@@ -181,7 +181,7 @@
               {% for name in collections %}
                   <a class="dropdown-item" href="{% url 'search' name.0 %}">{{name.1}}</a>
               {% endfor %}
-              </div>  
+              </div>
             </li>
           </ul>
         </div>
@@ -195,7 +195,7 @@
           <h6 class="text-center">Search from a collection of {{Cname}}</h6>
           <form method="post" enctype="multipart/form-data" class="form" style="width:100%;"novalidate>
             <div class="row justify-content-center align-items-center ">
-              
+
                 {% csrf_token %}
 
                 {{ form1.non_field_errors }}
@@ -205,27 +205,27 @@
                 {{ form1.txtquery.errors }}
                 {{ form1.imquery.errors }}
                 <div class="col-7">
-                  
+
                 <div class="input-group mb-2 mr-sm-2" id="txtquery">
                       <h2 id="lang"></h2>
                       {{ form1.txtquery }}
                       <span class="input-group-append">
                         <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                      </span>                      
+                      </span>
                 </div>
                 <div class="input-group mb-2 mr-sm-2" id="imgquery" style="display: none;">
                       <input type="text" class="form-control" id="imgname" disabled="disbaled" placeholder="Image">
                       <span class="input-group-append">
                         <a class="btn btn-danger mr-1" id="closebtn"><i class="fas fa-window-close" style="color:white;"></i></a>
                         <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                      </span>                      
+                      </span>
                 </div>
                 <div class="input-group mb-2 mr-sm-2 col-7" style="width:100%;position: relative;">
                     <a class="btn btn-primary mb-2 mr-2" data-toggle="collapse" data-parent="#accordion" href="#virtualkeyboard"><i class="fas fa-keyboard"></i></a>
                         <label class="btn-bs-file btn btn-primary mb-2 mr-2" data-toggle="tooltip" data-placement="right"  title="Search by example query image."><i class="fas fa-image"></i>
                           {{ form1.imquery }}
                           <script language="javascript" type="text/javascript">
-                              pramukhIME.addKeyboard(PramukhIndic,"{{lang}}"); 
+                              pramukhIME.addKeyboard(PramukhIndic,"{{lang}}");
                               pramukhIME.enable();
                           </script>
                         </label>
@@ -234,7 +234,7 @@
               </div>
             </form>
         </div>
-            
+
         <div class="col-md-10 col-lg-10 col-sm-12">
           <div class="row justify-content-center align-items-center ">
             <div id="virtualkeyboard" class="panel-collapse collapse">
@@ -250,7 +250,7 @@
             </div>
           </div>
         </div>
-      </div>               
+      </div>
         <div id="hyperlink" class="text-center">
 			{% if ftype == 'img' %}
 			<p class="text-center">Search results for <img src="{{qimg}}" style="padding:1px;border:1px solid #021a40;" height="50" width="100"></p>
@@ -268,7 +268,7 @@
                         <a href="{% url 'view_results' pages.number forloop.counter0 %}" data-toggle="tooltip" title="Click to open." >
                         <img src="{% url 'show_line' each.2 %}" style="padding:1px;border:1px solid #021a40;" width="900">
                         </a>
-                    
+
                     </figure>
                 </div>
             </div>
@@ -288,7 +288,7 @@
                     </span>
 
                     {% if pages.has_next %}
-                        <a href="?page={{ pages.next_page_number }}">next</a> | 
+                        <a href="?page={{ pages.next_page_number }}">next</a> |
                         <a href="?page={{ pages.paginator.num_pages }}">last &raquo;</a>
                     {% endif %}
                 </span>
@@ -302,6 +302,6 @@
 
     	<div class="line"></div>
     </div>
-    
+
 </body>
 </html>

@@ -7,6 +7,7 @@ class Collection(models.Model):
 	collection_link = models.URLField(blank=True)
 	desc = models.TextField(blank=True)
 	language = models.CharField(max_length=200, blank='True')
+	api_cname = models.CharField(max_length=200, blank='True')
 	words_path = models.CharField(max_length=200, blank='True')
 	demo_path = models.CharField(max_length=200, blank='True')
 
