@@ -69,11 +69,12 @@ def collection_index(request, cname):
 	return render(request, page_template, context)
 
 def search_txt(query, api_cname):
-	# if cname=="Mohanlal_writings":
-	# 	API_URL = 'http://localhost:9710/predict'
-	# else:
-	API_URL = 'http://localhost:9700/predict'
-	API_URL = 'http://10.4.16.103:9700/predict'
+	print(api_cname)
+	if api_cname=="lal":
+		API_URL = 'http://10.4.16.103:9701/predict'
+		# API_URL = 'http://10.4.16.53:9710/predict'
+	else:
+		API_URL = 'http://10.4.16.103:9700/predict'
 	payload = {'text': query.lower(), 'cname':api_cname}
 	# payload = {'text': query.lower(), 'cname':'coi_i2'}
 	print('Payload: ', payload)
@@ -91,11 +92,12 @@ def search_txt(query, api_cname):
 	return results, positions
 
 def search_img(query, api_cname):
-	# if cname=="Mohanlal_writings":
-	# 	API_URL = 'http://localhost:9710/predict'
-	# else:
-	# API_URL = 'http://localhost:9700/predict'
-	API_URL = 'http://10.4.16.103:9700/predict'
+	print(api_cname)
+	if api_cname=="lal":
+		API_URL = 'http://10.4.16.103:9701/predict'
+		# API_URL = 'http://10.4.16.53:9710/predict'
+	else:
+		API_URL = 'http://10.4.16.103:9700/predict'
 	# print(query)
 	data = {'image': query, 'cname':api_cname}
 	#
@@ -186,6 +188,7 @@ def demo_results(request, img_id):
 	b = bytearray(f)
 	img = cv2.imdecode(np.asarray(b), 1)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+	
 	# im_b64 = base64.b64encode(b).decode("utf8")
 	# results, positions = search_img(im_b64, request.session['api_cname'])
 	# with open('static/files/'+cname+'/results/'+img_id+'.p', 'wb') as f:
